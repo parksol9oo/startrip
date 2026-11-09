@@ -12,6 +12,14 @@
    - 1~2분 뒤 `https://parksol9oo.github.io/startrip/` 에서 열려요.
    - 비공개 저장소는 GitHub 유료 플랜에서만 Pages를 쓸 수 있어요.
 
+## 유저테스트용 화면 (test.html)
+
+`test.html`은 설명 패널·탭 없이 **폰 화면만** 보여주는 진입점이에요. 내부적으로 `index.html?app=zero`로 이동해요(처음 시작 상태). 무료 이용자 상태로 열려면 `index.html?app=free`, 프리미엄은 `?app=prem`.
+
+- 아이폰: Safari로 `test.html` 주소를 연 뒤 공유 → **홈 화면에 추가**. 앱처럼 전체 화면으로 열리고 아이콘은 `icon.png`(토끼)예요.
+- 홈 화면 앱은 Safari 탭과 저장 데이터(`localStorage`)를 따로 가져요. 테스터에게는 처음부터 홈 화면 앱으로 시작하라고 안내해 주세요.
+- 폰 화면은 390×760 기준으로 그려지고 기기 화면에 맞춰 비율대로 축소·확대돼요. 쪼개기 AI는 `index.html`과 같은 Worker를 그대로 써요(아래 참고).
+
 ## 쪼개기 AI 연결하기 (proxy/)
 
 `index.html`만 열면 쪼개기는 **예시 단계**로 동작해요. 실제로 AI가 쪼개게 하려면 `proxy/` 폴더의 Cloudflare Worker를 한 번 배포하고, 그 주소를 `index.html`에 적어 주면 돼요. API 키는 Worker 안에만 있고 정적 페이지에는 들어가지 않아요.

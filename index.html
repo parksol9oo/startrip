@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>startrip 실행 흐름 (261102 ver)</title></head><body style="margin:0">
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>startrip 실행 흐름 (261102 ver)</title><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="startrip"><meta name="theme-color" content="#A9DBFF"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png"></head><body style="margin:0">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
@@ -99,6 +99,20 @@ h1{font-size:22px;margin:0 0 4px;text-wrap:balance}
 button{color:inherit;-webkit-tap-highlight-color:transparent}input,textarea{color:var(--ink)}
 .rainfx{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27120%27%20height%3D%27120%27%3E%3Cg%20stroke%3D%27white%27%20stroke-width%3D%271.6%27%20stroke-linecap%3D%27round%27%20opacity%3D%27.7%27%3E%3Cline%20x1%3D%2710%27%20y1%3D%278%27%20x2%3D%276%27%20y2%3D%2722%27/%3E%3Cline%20x1%3D%2748%27%20y1%3D%2730%27%20x2%3D%2744%27%20y2%3D%2744%27/%3E%3Cline%20x1%3D%2790%27%20y1%3D%274%27%20x2%3D%2786%27%20y2%3D%2718%27/%3E%3Cline%20x1%3D%2730%27%20y1%3D%2770%27%20x2%3D%2726%27%20y2%3D%2784%27/%3E%3Cline%20x1%3D%2770%27%20y1%3D%2760%27%20x2%3D%2766%27%20y2%3D%2774%27/%3E%3Cline%20x1%3D%27108%27%20y1%3D%2780%27%20x2%3D%27104%27%20y2%3D%2794%27/%3E%3Cline%20x1%3D%2716%27%20y1%3D%27104%27%20x2%3D%2712%27%20y2%3D%27118%27/%3E%3Cline%20x1%3D%2760%27%20y1%3D%27100%27%20x2%3D%2756%27%20y2%3D%27114%27/%3E%3C/g%3E%3C/svg%3E");background-size:160px 160px;animation:rainfall .7s linear infinite;opacity:.35}@keyframes rainfall{to{background-position:-40px 160px}}.nightui .hdr{color:#fff}.nightui .hdr [style*="var(--sub)"]{color:#C9D4F0 !important}
 .nomotion *{animation:none!important;transition:none!important}
+/* 앱 모드 (test.html · ?app): 설명 패널 · 탭을 숨기고 폰 화면만 뷰포트에 맞춰 보여줘요 */
+html.app{--appTop:env(safe-area-inset-top,0px);--appBottom:env(safe-area-inset-bottom,0px)}
+html.app,html.app body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.app body{padding:0;background:#A9DBFF;background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%)}
+html.app .tabs,html.app .side,html.app #play>div:first-child>div:not(.ph){display:none!important}
+html.app .wrap{display:block;max-width:none;margin:0}
+html.app #play>div:first-child{position:fixed;left:50%;top:50%;width:390px;height:760px;transform:translate(-50%,-50%) scale(var(--appScale,1));transform-origin:center;gap:0}
+html.app .ph{width:390px;height:760px;border-radius:0;box-shadow:none}
+html.app .ph .scr{padding-top:calc(16px + var(--appTop,0px));padding-bottom:calc(24px + var(--appBottom,0px))}
+html.app .toast{top:calc(90px + var(--appTop,0px))}
+html.app .ph .tabbar{padding-bottom:calc(16px + var(--appBottom,0px))}
+html.app .ph .sheet{padding-bottom:calc(28px + var(--appBottom,0px))}
+html.app .ph .top{margin-top:calc(6px + var(--appTop,0px)/3)}
+html.app .ph .fab{bottom:calc(14px + var(--appBottom,0px))}
 .cdrift{animation-name:cdrift;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
 @keyframes cdrift{from{transform:translateX(-440px)}to{transform:translateX(440px)}}
 </style>
@@ -1318,6 +1332,17 @@ function tab(mode){ [["zero",tZ],["free",tP],["prem",tPr],["flow",tF]].forEach((
   const nx=PLAN_ST[mode]; if(nx) S=nx; else if(mode==="zero") freshZero(); else { fresh(); S.log=[mode==="prem"?"프리미엄 이용자 · 홈":"무료 이용자 · 홈"]; } planNote(); render(); }
 document.getElementById("emptyBtn").addEventListener("click",emptyStart);
 tZ.onclick=()=>tab("zero"); tP.onclick=()=>tab("free"); tPr.onclick=()=>tab("prem"); tF.onclick=()=>tab("flow"); planNote();
+
+/* 앱 모드: test.html 이 index.html?app 으로 보내요. ?app=zero(기본·처음 시작) | free | prem */
+(function(){ const q=new URLSearchParams(location.search); if(!q.has("app")) return;
+  const m={zero:"zero",free:"free",prem:"prem"}[q.get("app")]||"zero"; document.documentElement.classList.add("app"); tab(m);
+  const r=document.documentElement; let last=0;
+  function fit(){ const vw=window.innerWidth, vh=window.innerHeight, sc=Math.min(vw/390,vh/760);
+    /* 세로가 남으면 폰을 세로로 늘리지 않고 여백을 위·아래 안전영역처럼 써요 */
+    r.style.setProperty("--appScale",sc.toFixed(4)); if(Math.abs(sc-last)>0.001){ last=sc; } }
+  fit(); window.addEventListener("resize",fit); window.addEventListener("orientationchange",()=>setTimeout(fit,50));
+  if(window.visualViewport) visualViewport.addEventListener("resize",fit);
+})();
 
 </script>
 </body></html>
