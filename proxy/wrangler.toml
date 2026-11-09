@@ -5,7 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 # 쉼표로 구분한 허용 origin. 비우면 모든 origin 허용(개발용).
-ALLOWED_ORIGINS = "https://parksol9oo.github.io"
+# "null" 은 index.html 을 더블클릭(file://)으로 열었을 때의 origin 이에요. 사이트를 공개할 때는 빼는 게 안전해요.
+ALLOWED_ORIGINS = "https://parksol9oo.github.io,null"
 MODEL = "claude-haiku-5-5"
 
 # 비밀 값은 vars 가 아니라 secret 으로 넣어요:
