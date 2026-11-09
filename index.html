@@ -573,10 +573,10 @@ view=function(S){ if(S.view==="micSheet") return __viewMic(Object.assign({},S,{v
 /* S1 홈 · 진행 중인 목표 0개 (첫 시작 · 모두 도착) */
 function homeEmpty(S){ const first=true;
   return `<div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px 20px 10px">
-   <div style="width:64px;height:64px;border-radius:50%;background:#fff;color:var(--co);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(40,95,150,.08)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></div>
+   <div style="width:64px;height:64px;border-radius:50%;background:#fff;color:var(--co);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(40,95,150,.08)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.1 5.55a2 2 0 0 0 1.8 0l3.65-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.27a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.65 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9L8.1 3.45a2 2 0 0 1 1.8 0z"/><path d="M15 5.76v15M9 3.24v15"/></svg></div>
    <b style="font-size:19px;margin-top:18px">${first?"다음 여행을 기다리고 있어요":"모든 여행을 마쳤어요"}</b>
    <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--sub)">${first?"미뤄둔 일 하나로<br>새 여행을 떠나봐요":"도착한 기록은 여권에 쌓여 있어요<br>다음 여행을 떠나볼까요?"}</p>
-   <button data-a="new" style="margin-top:18px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--sub)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>위의 + 새 목표를 눌러 시작해요</button></div>`; }
+   <button data-a="new" style="margin-top:18px;display:inline-flex;align-items:center;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--sub)">위의 + 새 목표를 눌러 시작해요</button></div>`; }
 function emptyStart(){ stopTick(); S.goals=S.goals.filter(g=>g.arrived); if(!S.goals.length){ fresh(); S.goals=S.goals.filter(g=>g.arrived); } const k=S.goals.findIndex(g=>g.friend==="squirrel"); S.gi=k<0?0:k; S.view="home"; S.log.push("— 진행 중인 목표 0개 상태"); render(); }
 
 /* 완전 초기 상태 (목표 · 기록 · 아이템 없음) */
