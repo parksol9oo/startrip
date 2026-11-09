@@ -161,10 +161,22 @@ view=function(S){ if(S.view==="reveal") return revealView(S); let h=__viewAd(S);
     const card=`<div class="card" style="margin-top:12px;display:flex;align-items:center;gap:12px;padding:12px 14px;background:#FFF7E6"><span style="font-size:28px">${hs[k-1][0]}</span><span style="flex:1;min-width:0"><span style="display:block;font-size:11px;font-weight:900;color:#B98A00;letter-spacing:.5px">도착지 힌트 ${k}/4 · 어디로 가고 있을까요?</span><b style="font-size:15px">${hs[k-1][1]}</b></span></div>`;
     const m='<div class="sp"></div><button class="btn" data-a="ok">'; if(h.includes(m)) h=h.replace(m,card+m); } }
   return h; };
+/* 쪼개기 AI 연결 ─ AI_API 에 배포한 프록시(proxy/ 폴더, Cloudflare Worker) 주소를 넣어요. 예) "https://startrip-split.<계정>.workers.dev"
+   비워 두면 claude.ai 아티팩트 런타임(window.claude)을 시도하고, 그것도 없으면 예시 단계(SPLIT)로 보여줘요. */
+const AI_API="https://startrip-split.startrip-app.workers.dev";
 let aiSample=null; try{ if(window.claude&&claude.use) claude.use("sample").then(f=>{aiSample=f;}).catch(()=>{}); }catch(e){}
 let splitReq=0;
+function cleanSteps(r,n){ const arr=(Array.isArray(r)?r:(r&&Array.isArray(r.steps)?r.steps:[])).map(x=>String(x).trim()).filter(Boolean).slice(0,n); if(arr.length<2) throw {code:"bad_output"}; return arr; }
 async function aiSplit(goal,lv){
   const n=LEVELS[lv][2], desc=LEVELS[lv][1];
+  if(AI_API){
+    const ctl=new AbortController(), tm=setTimeout(()=>ctl.abort(),25000);
+    let res; try{ res=await fetch(AI_API.replace(/\/$/,"")+"/split",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({goal,level:lv}),signal:ctl.signal}); }
+    catch(e){ throw {code:e&&e.name==="AbortError"?"timeout":"network"}; } finally{ clearTimeout(tm); }
+    let j=null; try{ j=await res.json(); }catch(e){}
+    if(!res.ok) throw {code:(j&&j.error)||("http_"+res.status)};
+    return cleanSteps(j,n);
+  }
   if(!aiSample) throw {code:"unavailable"};
   const prompt=`너는 할 일을 잘게 쪼개 주는 도우미야. 사용자가 미루지 않고 바로 시작할 수 있게 목표를 실행 단계로 나눠줘.
 목표: "${goal}"
@@ -174,10 +186,7 @@ async function aiSplit(goal,lv){
 - 각 단계는 한국어로 20자 이내의 짧은 행동 문장 (예: "목차 정하기")
 - 번호, 이모지, 설명 붙이지 말 것
 JSON 문자열 배열로만 답해. 예: ["단계1","단계2"]`;
-  const r=await aiSample.json(prompt,{modelTier:"quick"});
-  const arr=(Array.isArray(r)?r:(r&&Array.isArray(r.steps)?r.steps:[])).map(x=>String(x).trim()).filter(Boolean).slice(0,n);
-  if(arr.length<2) throw {code:"bad_output"};
-  return arr;
+  return cleanSteps(await aiSample.json(prompt,{modelTier:"quick"}),n);
 }
 const GENERIC=["관련 파일 한 곳에 모으기","지금 버전 한 번 훑어보기","고칠 곳 3개 표시하기","첫 번째 고칠 곳 손보기","두 번째 고칠 곳 손보기","세 번째 고칠 곳 손보기","전체 다시 읽어보기","파일 이름 정리해서 저장하기","누군가에게 보내기"];
 const HATN={straw:"밀짚모자",cap:"캡 모자",sombrero:"솜브레로",pirate:"해적 모자",gat:"갓",beret:"베레모",turban:"터번",bearskin:"근위병 털모자"};

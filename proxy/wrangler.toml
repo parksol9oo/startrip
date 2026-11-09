@@ -1,0 +1,13 @@
+name = "startrip-split"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# 쉼표로 구분한 허용 origin. 비우면 모든 origin 허용(개발용).
+ALLOWED_ORIGINS = "https://parksol9oo.github.io"
+MODEL = "claude-haiku-5-5"
+
+# 비밀 값은 vars 가 아니라 secret 으로 넣어요:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+# 로컬 개발은 proxy/.dev.vars 파일에 ANTHROPIC_API_KEY=... 한 줄.

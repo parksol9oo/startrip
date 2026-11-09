@@ -12,6 +12,31 @@
    - 1~2분 뒤 `https://parksol9oo.github.io/startrip/` 에서 열려요.
    - 비공개 저장소는 GitHub 유료 플랜에서만 Pages를 쓸 수 있어요.
 
+## 쪼개기 AI 연결하기 (proxy/)
+
+`index.html`만 열면 쪼개기는 **예시 단계**로 동작해요. 실제로 AI가 쪼개게 하려면 `proxy/` 폴더의 Cloudflare Worker를 한 번 배포하고, 그 주소를 `index.html`에 적어 주면 돼요. API 키는 Worker 안에만 있고 정적 페이지에는 들어가지 않아요.
+
+1. **배포** (처음 한 번, Cloudflare 계정 필요 · 무료 플랜으로 충분)
+   ```bash
+   cd proxy
+   npm install
+   npx wrangler login
+   npx wrangler secret put ANTHROPIC_API_KEY   # 프롬프트에 키 붙여넣기
+   npx wrangler deploy                          # 끝나면 https://startrip-split.<계정>.workers.dev 주소가 나와요
+   ```
+2. **연결**: `index.html`에서 `const AI_API=""`를 찾아 위 주소를 넣어요. 예) `const AI_API="https://startrip-split.xxx.workers.dev";`
+3. **허용 origin**: `proxy/wrangler.toml`의 `ALLOWED_ORIGINS`에 페이지가 열리는 주소를 적어요. 기본값은 GitHub Pages 주소예요. 다른 곳(예: 로컬 파일)에서도 테스트하려면 쉼표로 추가하거나, 비워 두면 전부 허용돼요(개발용).
+
+**로컬에서 테스트**
+
+```bash
+cd proxy && cp .dev.vars.example .dev.vars   # 파일 안에 키 넣기
+npm run dev                                   # http://127.0.0.1:8787
+```
+`index.html`의 `AI_API`를 `"http://127.0.0.1:8787"`로 바꾸고 브라우저로 열면 돼요.
+
+**동작 방식**: 브라우저 → `POST /split {goal, level}` → Worker가 Claude(`claude-haiku-5-5`, 구조화 출력)로 단계 배열을 받아 `{steps:[...]}`로 돌려줘요. 단계 수는 `index.html`의 `LEVELS`(3·5·7·9)와 `proxy/src/index.ts`의 `LEVELS`가 같아야 해요. 프록시가 꺼져 있거나 오류가 나면 예전처럼 예시 단계로 떨어지고 토스트로 알려줘요. 모델은 `wrangler.toml`의 `MODEL`로 바꿀 수 있어요(더 정교하게 쪼개려면 `claude-opus-5-5`).
+
 ## 함께 수정하는 방법
 
 1. `main`에서 작업용 브랜치를 만들어요. 예) `feat/home-empty`, `fix/s9-mic`
