@@ -102,7 +102,7 @@ button{color:inherit;-webkit-tap-highlight-color:transparent}input,textarea{colo
 @keyframes cdrift{from{transform:translateX(-440px)}to{transform:translateX(440px)}}
 </style>
 
-<div class="tabs" role="tablist"><button role="tab" id="tabPlay" aria-selected="true">직접 눌러보기 · 무료</button><button role="tab" id="tabPrem" aria-selected="false">직접 눌러보기 · 프리미엄</button><button role="tab" id="tabFlow" aria-selected="false">펼쳐보기</button></div>
+<div class="tabs" role="tablist"><button role="tab" id="tabZero" aria-selected="false">처음 시작 · 초기 상태</button><button role="tab" id="tabPlay" aria-selected="true">직접 눌러보기 · 무료</button><button role="tab" id="tabPrem" aria-selected="false">직접 눌러보기 · 프리미엄</button><button role="tab" id="tabFlow" aria-selected="false">펼쳐보기</button></div>
 <div class="wrap" id="play">
   <div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex:none;width:min(390px,100%)">
     <div style="align-self:stretch"><h1>실행 흐름 직접 눌러보기</h1><p class="lead">버튼을 눌러보면 오른쪽 상태가 바로 바뀌어요.</p><div id="planNote" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-8px 0 4px"></div></div>
@@ -488,8 +488,8 @@ view=function(S){const h=auView(S);return h!=null?h:__viewAu(S);};
 (function(){ const st=document.createElement("style"); st.textContent="@keyframes auFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}@keyframes auPop{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}@keyframes auDot{0%,100%{transform:translateY(0);opacity:.6}40%{transform:translateY(-6px);opacity:1}}@keyframes auBlink{50%{opacity:0}}.auf:focus-within{border-color:var(--co)!important}"; document.head.appendChild(st); })();
 setInterval(()=>{ const el=document.querySelector("#ph #auTm"); if(!el) return; if(AU.t>0) AU.t--; el.textContent=auMm(AU.t); },1000);
 let auSplashT=null;
-function auSplashNext(){ clearTimeout(auSplashT); if(S.view!=="splash") return; if(PREF.auth) go("home","스플래시 → 홈 (로그인됨)"); else go("auStart","스플래시 → A01 시작"); }
-function auLoginDone(m,label){ PREF.auth={m,email:m==="이메일"?AU.email:(m==="카카오"?"traveler@kakao.com":m==="Apple"?"traveler@privaterelay.appleid.com":"traveler@gmail.com")}; savePref(); }
+function auSplashNext(){ clearTimeout(auSplashT); if(S.view!=="splash") return; if(PREF.auth&&!S.newUser) go("home","스플래시 → 홈 (로그인됨)"); else go("auStart","스플래시 → A01 시작"); }
+function auLoginDone(m,label){ S.newUser=false; PREF.auth={m,email:m==="이메일"?AU.email:(m==="카카오"?"traveler@kakao.com":m==="Apple"?"traveler@privaterelay.appleid.com":"traveler@gmail.com")}; savePref(); }
 
 const __renderAu=render;
 render=function(){ __renderAu(); if(S.view==="splash"){ clearTimeout(auSplashT); auSplashT=setTimeout(auSplashNext,2600); } };
@@ -516,7 +516,6 @@ const actN=S=>S.goals.filter(g=>!g.arrived).length;
 function recLockSet(S){ if(isPrem(S)) return new Set(); const arr=S.goals.map((g,i)=>[g,i]).filter(([g])=>g.arrived).sort((a,b)=>(b[0].date||"").localeCompare(a[0].date||"")||b[1]-a[1]); return new Set(arr.slice(3).map(x=>x[1])); }
 CODE.goalCap="S1-P 목표 슬롯이 다 찼어요"; CODE.recLock="S20-P 지난 기록 잠금";
 const upLock=(s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||"currentColor"}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
-function slotCard(k){ return `<button data-a="new" aria-label="빈 슬롯에 새 목표 시작하기" style="width:100%;height:74px;margin-bottom:10px;border-radius:20px;border:2px dashed #BFD3E4;background:rgba(255,255,255,.55);display:flex;align-items:center;gap:12px;padding:0 18px;text-align:left"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:#fff;color:var(--co);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(40,95,150,.08)">${I_("plus",18,3)}</span><span style="flex:1"><b style="display:block;font-size:15px;color:var(--ink)">빈 슬롯</b><span style="font-size:12px;color:var(--sub)">새 목표를 시작할 수 있어요</span></span></button>`; }
 function upSheet(S){ const cap=S.view==="goalCap";
   const act=S.goals.filter(g=>!g.arrived), lk=[...recLockSet(S)].map(i=>S.goals[i]).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
   const box=cap? `<div style="font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:8px">진행 중 ${act.length}/3</div>${act.slice(0,3).map(g=>`<div style="display:flex;align-items:center;gap:10px;padding:5px 0"><span style="flex:none;width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:flex-end;justify-content:center;overflow:hidden">${auBust(g.friend,30,30)}</span><b style="flex:1;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.title}</b><span style="font-size:12px;color:var(--sub)">${g.tasks.filter(t=>t.st==="done").length}/${g.tasks.length}</span></div>`).join("")}<div style="font-size:12px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--line)">하나에 도착하면 슬롯이 열리고, 기록은 여권에 쌓여요</div>`
@@ -531,7 +530,7 @@ function upSheet(S){ const cap=S.view==="goalCap";
 const __viewPlan=view;
 view=function(S){ if(S.view==="goalCap"||S.view==="recLock") return __viewPlan(Object.assign({},S,{view:S.upBase||(S.view==="goalCap"?"home":"rec")}))+upSheet(S); return __viewPlan(S); };
 function planNote(){ const el=document.getElementById("planNote"); if(!el) return; const p=PLAN.premium; const chip=(t,on)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${on?"#DDF3E5":"#fff"};color:${on?"#1E7A45":"var(--sub)"};border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;box-shadow:0 1px 3px rgba(40,80,120,.08)">${t}</span>`;
-  el.innerHTML=`<b style="font-size:13px;color:${p?"#B98A00":"var(--ink)"};margin-right:2px">${p?"프리미엄 이용자":"무료 이용자"}</b>`+[[p?"진행 목표 무제한":"진행 목표 3개",p],[p?"모든 기록":"기록 최근 3개",p],[p?"광고 없음":"광고 있음",p],[p?"치밀하게 쪼개기":"치밀하게 잠김",p]].map(x=>chip(x[0],x[1])).join(""); }
+  if(typeof MODE!=="undefined"&&MODE==="zero"){ el.innerHTML=`<b style="font-size:13px;color:var(--ink);margin-right:2px">처음 시작하는 사용자</b>`+[["목표 0개",0],["기록 0개",0],["아이템 0개",0],["무료",0]].map(x=>chip(x[0],x[1])).join(""); return; } el.innerHTML=`<b style="font-size:13px;color:${p?"#B98A00":"var(--ink)"};margin-right:2px">${p?"프리미엄 이용자":"무료 이용자"}</b>`+[[p?"진행 목표 무제한":"진행 목표 3개",p],[p?"모든 기록":"기록 최근 3개",p],[p?"광고 없음":"광고 있음",p],[p?"치밀하게 쪼개기":"치밀하게 잠김",p]].map(x=>chip(x[0],x[1])).join(""); }
 
 /* S9 목표 음성 입력 (Web Speech API · 안 되는 환경은 데모 인식) */
 CODE.micSheet="S9-1 말로 목표 입력";
@@ -570,11 +569,26 @@ function homeEmpty(S){ const first=true;
    <button data-a="new" style="margin-top:18px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.75);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--sub)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>위의 + 새 목표를 눌러 시작해요</button></div>`; }
 function emptyStart(){ stopTick(); S.goals=S.goals.filter(g=>g.arrived); if(!S.goals.length){ fresh(); S.goals=S.goals.filter(g=>g.arrived); } const k=S.goals.findIndex(g=>g.friend==="squirrel"); S.gi=k<0?0:k; S.view="home"; S.log.push("— 진행 중인 목표 0개 상태"); render(); }
 
+/* 완전 초기 상태 (목표 · 기록 · 아이템 없음) */
+function HERO0(){ return {title:"아직 떠난 여행이 없어요",friend:PREF.friend||"rabbit",hat:"",bag:"",shoes:"",acc:"",bg:"city",tasks:[],t:0,country:"",arrived:false}; }
+function freshZero(){ fresh(); S.goals=[]; S.owned=[]; S.gi=0; S.giftK=""; S.zero=true; S.newUser=true; S.view="splash"; S.log=["완전 초기 상태 · 스플래시"]; S.draft.fi=0; }
+function bagEmpty(){ return `<div class="scr" style="padding:0;background:linear-gradient(180deg,#D3EDFF,#F2FAFF 40%)">
+  <div style="flex:none;padding:18px 20px 0"><b style="font-size:20px">가방</b></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 28px 40px">
+   <div style="width:64px;height:64px;border-radius:50%;background:#fff;color:var(--co);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(40,95,150,.08)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/></svg></div>
+   <b style="font-size:19px;margin-top:18px">가방이 아직 비어 있어요</b>
+   <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--sub)">목표를 걷다 보면 친구가<br>여행지에서 아이템을 하나씩 주워 와요</p>
+   <button data-a="new" style="margin-top:18px;display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:800;color:var(--ink);box-shadow:0 2px 8px rgba(40,95,150,.08)"><span style="color:var(--co);display:inline-flex">${I_("plus",14,3)}</span>첫 목표 만들기</button></div>
+  ${tabbar("bag")}</div>`; }
+const __viewZero=view;
+view=function(S){ if(S.view==="bagTab"&&!S.goals.length) return adWrap(S,bagEmpty()); return __viewZero(S); };
+function adWrap(S,h){ if(isPrem(S)) return h; const k=h.indexOf('<div class="scr"'); const e=h.indexOf('>',k); return h.slice(0,e+1)+adBanner()+h.slice(e+1); }
+
 fresh();
 const ph=document.getElementById("ph");
 setTimeout(applyMotion,0);
 const G=()=>S.goals[S.gi];
-const cur=g=>{ g=g||G(); const p=g.tasks[g.pick]; return (p&&p.st!=="done")?p:g.tasks.find(t=>t.st!=="done"); };
+const cur=g=>{ g=g||G(); if(!g) return null; const p=g.tasks[g.pick]; return (p&&p.st!=="done")?p:g.tasks.find(t=>t.st!=="done"); };
 const km=s=>(s*0.1).toFixed(1);
 const mmss=s=>s>=3600?Math.floor(s/3600)+":"+String(Math.floor(s%3600/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"):String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
 const goalTxt=m=>(m>=60?Math.floor(m/60)+"시간"+(m%60?" "+m%60+"분":""):m+"분");
@@ -728,7 +742,7 @@ function stampHTML(g,size,rot){ return stampImg(g,size,rot); }
 function fmtN(x,dec){ if(x<100&&dec) return x.toFixed(1); if(x<10000) return Math.round(x).toLocaleString("ko-KR"); if(x<100000000) return (x/10000).toFixed(x<100000?1:0).replace(/\.0$/,"")+"만"; return (x/100000000).toFixed(1).replace(/\.0$/,"")+"억"; }
 function recView(S){
   const arr=S.goals.map((g,i)=>[g,i]).filter(([g])=>g.arrived), ing=S.goals.map((g,i)=>[g,i]).filter(([g])=>!g.arrived);
-  const totalT=S.goals.reduce((a,g)=>a+(g.t||0),0), starts=S.goals.reduce((a,g)=>a+(g.starts||0),0)+12;
+  const totalT=S.goals.reduce((a,g)=>a+(g.t||0),0), starts=S.goals.reduce((a,g)=>a+(g.starts||0),0)+(S.zero?0:12);
   const LK=recLockSet(S); const cells=arr.map(([g,i],k)=>LK.has(i)?`<button data-a="recLockOpen" aria-label="${g.title} · 프리미엄에서 열려요" style="background:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;justify-content:center;min-height:0;position:relative"><div style="position:relative;filter:grayscale(1);opacity:.35">${stampHTML(g,100,[-6,5,-3,7][k%4])}</div><span style="position:absolute;top:28%;left:50%;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;background:#fff;color:#B98A00;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(40,95,150,.18)">${upLock(17)}</span><span style="font-size:12px;font-weight:800;color:var(--faint)">${g.title}</span></button>`:`<button data-stamp="${i}" style="background:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;justify-content:center;min-height:0">${stampHTML(g,100,[-6,5,-3,7][k%4])}<span style="font-size:12px;font-weight:800;color:var(--ink)">${g.title}</span></button>`)
    .concat(ing.map(([g,i])=>{ const n=g.tasks.length, dn=g.tasks.filter(t=>t.st==="done").length; return `<button data-detail="${i}" style="background:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;justify-content:center;min-height:0"><div style="width:100px;aspect-ratio:100/92;border:2px dashed #C9D7E3;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--faint)"><span style="font-size:30px;font-weight:900">?</span><span style="font-size:11px;font-weight:800">여정 ${Math.round(dn/n*100)}%</span></div><span style="font-size:12px;font-weight:700;color:var(--sub)">${g.title}</span></button>`; }));
   const pages=[]; for(let p=0;p<cells.length;p+=6) pages.push(cells.slice(p,p+6)); if(!pages.length||pages[pages.length-1].length>=6) pages.push([]); const last=pages[pages.length-1]; last.push(`<button data-a="new" aria-label="새 목표 추가" style="background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0;min-height:0"><div style="width:100px;aspect-ratio:100/92;border-radius:10px;background:rgba(255,255,255,.7);border:2px dashed #C9D7E3;display:flex;align-items:center;justify-content:center;color:var(--co)">${I_("plus",30,3)}</div><span style="font-size:12px;font-weight:800;color:var(--sub)">새 목표</span></button>`); while(last.length<6) last.push(`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><div style="width:100px;aspect-ratio:100/92;border-radius:10px;background:rgba(201,215,227,.22)"></div><span style="font-size:12px;visibility:hidden">-</span></div>`);
@@ -854,18 +868,18 @@ function view(S){
   if(S.view==="detail"){ const base=view(Object.assign({},S,{view:S.detailBack||"home"})); return base+detailPop(S); }
   const v=S.view; let h="";
   if(v==="home"){
-    const g0=!S.goals[S.gi].arrived?S.goals[S.gi]:(S.goals.find(g=>!g.arrived)||S.goals[S.gi]);
+    const g0=!S.goals.length?HERO0():!S.goals[S.gi]?S.goals[0]:!S.goals[S.gi].arrived?S.goals[S.gi]:(S.goals.find(g=>!g.arrived)||S.goals[S.gi]);
     h=`<div class="scr" style="padding:0">
      <div style="flex:none;height:228px;position:relative;display:flex;flex-direction:column;overflow:hidden">
        ${(()=>{const B=BGL(g0), L=k=>`<div class="loop" style="top:auto;bottom:-104px;background-image:url(${B[k]})"></div>`;return `<div style="position:absolute;inset:0;background:${B.fill}"></div>`+L("sky")+wxSky(S.wx,"calc(100% - 154px)")+L("cloud")+L("far")+L("ground")+wxAll(S.wx)})()}
-       <div class="top" style="padding:16px 20px 0"><span class="hud" style="display:inline-flex;align-items:center;gap:5px">${IF_("clock",14)} ${tT(S.goals.reduce((a,g)=>a+(g.t||0),0))}</span><span class="hud" style="display:inline-flex;align-items:center;gap:5px">${IF_("zap",14)} 12번 시작</span></div>
+       <div class="top" style="padding:16px 20px 0"><span class="hud" style="display:inline-flex;align-items:center;gap:5px">${IF_("clock",14)} ${tT(S.goals.reduce((a,g)=>a+(g.t||0),0))}</span><span class="hud" style="display:inline-flex;align-items:center;gap:5px">${IF_("zap",14)} ${S.zero?S.goals.reduce((a,g)=>a+(g.starts||0),0):12}번 시작</span></div>
        <div style="flex:1;position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:34px">
          <div style="position:absolute;bottom:30px;width:150px;height:16px;border-radius:50%;background:rgba(90,60,30,.18)"></div>
          <div style="position:relative">${fig(g0,138)}</div>
          <button class="fab" data-a="new" style="bottom:30px;background:#fff;color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.12)"><span style="color:var(--co);display:inline-flex">${I_("plus",16,3)}</span> 새 목표</button></div></div>
      <div class="hsheet" style="background:#EAF5FF;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin-top:0;border-radius:0;box-shadow:none;padding-top:11px;padding-bottom:12px">
        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 4px 10px;margin-top:-11px;position:sticky;top:-11px;z-index:2;background:#EAF5FF"><b style="font-size:17px">진행 중인 목표 <span style="color:var(--co)">${actN(S)}</span>${isPrem(S)?"":`<span style="color:var(--faint);font-weight:800">/3</span>`}</b>${!actN(S)?"":isPrem(S)?`<span style="font-size:12px;color:#B98A00;font-weight:800">제한 없음</span>`:`<span style="font-size:12px;color:var(--sub);font-weight:700">무료 슬롯 ${Math.max(0,3-actN(S))}개 남음</span>`}</div>
-       ${(()=>{ const act=S.goals.map((g,i)=>[g,i]).filter(([g])=>!g.arrived); if(!act.length) return homeEmpty(S); if(!isPrem(S)) return act.map(([g,i])=>goalCard(g,i)).join("")+Array.from({length:Math.max(0,3-act.length)}).map((_,k)=>slotCard(k)).join(""); return act.length?act.map(([g,i])=>goalCard(g,i)).join(""):`<div style="text-align:center;padding:28px 0;font-size:13.5px;color:var(--sub);line-height:1.6">진행 중인 목표가 없어요<br><button data-a="new" style="background:none;color:var(--co);font-weight:800;font-size:13.5px;margin-top:4px">+ 새 목표 만들기</button></div>`; })()}</div>
+       ${(()=>{ const act=S.goals.map((g,i)=>[g,i]).filter(([g])=>!g.arrived); if(!act.length) return homeEmpty(S); if(!isPrem(S)) return act.map(([g,i])=>goalCard(g,i)).join(""); return act.length?act.map(([g,i])=>goalCard(g,i)).join(""):`<div style="text-align:center;padding:28px 0;font-size:13.5px;color:var(--sub);line-height:1.6">진행 중인 목표가 없어요<br><button data-a="new" style="background:none;color:var(--co);font-weight:800;font-size:13.5px;margin-top:4px">+ 새 목표 만들기</button></div>`; })()}</div>
      ${tabbar("home")}</div>`;
   }
   if(v==="input"){
@@ -1005,7 +1019,7 @@ function render(){ setTimeout(sndSync,0); { const sc=ph.querySelector("#ppScroll
 function fitAll(){ ph.querySelectorAll(".fit").forEach(el=>{ el.style.transform=""; const box=el.parentElement.clientWidth-6, w=el.scrollWidth; if(w>box){ el.style.transform="scale("+(box/w)+")"; el.style.transformOrigin="center"; el.style.maxWidth="none"; } }); }
 window.addEventListener("resize",fitAll);
 function side(){
-  const g=G(), c=cur(g);
+  const g=G()||HERO0(), c=cur(g);
   document.getElementById("bgPick").innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;margin-bottom:6px"><span style="font-size:12px;font-weight:800;color:var(--sub);margin-right:2px">날씨</span>${[["day","낮"],["sunset","노을"],["night","밤"]].map(([k,n])=>`<button data-wx="${k}" class="reset" style="${(S.wx||{tod:"day"}).tod===k?"background:var(--ink);color:#fff":""}">${n}</button>`).join("")}<button data-wx="rain" class="reset" style="${S.wx&&S.wx.rain?"background:var(--ink);color:#fff":""}">비</button><button data-wx="rand" class="reset" style="${S.wxLock?"":"background:var(--co);color:#fff"}">랜덤</button></div>`+`<span style="font-size:12px;font-weight:800;color:var(--sub);margin-right:2px">여행지 배경</span>`+Object.entries(BGN).map(([k,n])=>`<button data-setbg="${k}" class="reset" style="${(g.bg||"desert")===k?"background:var(--ink);color:#fff":""}">${n}</button>`).join("");
   document.getElementById("gTitle").textContent=g.title+" · "+FNAME[g.friend];
   document.getElementById("tl").innerHTML=g.tasks.map((x,i)=>`<div class="ti ${x===c?"cur":""}"><span class="n">${i+1}</span><div class="nm">${x.n}</div>${chip(x.st)}</div>`).join("");
@@ -1242,7 +1256,7 @@ document.getElementById("bgPick").addEventListener("click",e=>{ const w=e.target
   document.getElementById("catalog").innerHTML=H("여행지 "+NEWC.length+"곳","중간 지점에서 그 나라 아이템")+`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">${cs}</div>`+H("어디서나 나오는 아이템","깜짝 선물 · 하루 한 번 25%")+`<div style="display:flex;flex-wrap:wrap;gap:6px">${rp}</div>`; })();
 document.getElementById("randBtn").addEventListener("click",()=>{ S.randAlways=!S.randAlways; document.getElementById("randBtn").textContent=S.randAlways?"깜짝 선물 항상 (데모)":"깜짝 선물 25%"; });
 document.getElementById("sndBtn").addEventListener("click",()=>{ SND.on=!SND.on; try{ localStorage.setItem("snd",SND.on?"on":"off"); }catch(e){} if(SND.on){ actx(); sfx("ok"); } sndSync(); });
-document.getElementById("reset").addEventListener("click",()=>{ stopTick(); fresh(); render(); });
+document.getElementById("reset").addEventListener("click",()=>{ stopTick(); if(typeof MODE!=="undefined"&&MODE==="zero") freshZero(); else fresh(); render(); });
 document.getElementById("skip").addEventListener("click",()=>{ const g=G(); g.tasks.forEach((t,i)=>{ if(i<g.tasks.length-1) t.st="done"; }); g.gift=true; g.giftK=g.giftK||"hat:sombrero"; S.toast="마지막 단계만 남겼어요 (데모)"; S.log.push("도착 직전으로"); go("home"); });
 S.view="splash"; S.log=["스플래시"];
 render();
@@ -1267,7 +1281,7 @@ const PATHS=[
  {h:"기록 · 내 여권",p:"탭 바 [기록] → 위 [도장|엽서] 토글. 도장: 여권 페이지(도착 도장 + 여행 중 ? 도장), 누르면 그 여행 기록. 빈칸의 [+]를 누르면 바로 새 목표 입력. 엽서: 월별 엽서 모음 + 여행 중 잠긴 엽서, 누르면 크게 보기.",steps:[["","탭 바 [기록]",{set:{view:"rec"}}],["","빈칸 [+] → 새 목표 바로 추가",{set:{view:"input"},d:ND}],["","도장 상세 · 그때 얻은 아이템",{set:{view:"stamp",stampGi:3}}],["","[크게 보기] → 엽서 크게",{set:{view:"stamp",stampGi:3,pcBig:true}}],["","공유 버튼 → 인스타 스토리용 이미지",{set:{view:"share",stampGi:3}}]]},
  {h:"마이",p:"프로필(닉네임 · 이메일 · 로그인 방식) + 프리미엄 카드 + 설정 메뉴.",steps:[["","탭 바 [마이]",{set:{view:"me"}}]]},
  {h:"무료 · 진행 중인 목표 0개",p:"처음 시작했거나 모든 목표에 도착해 진행 중인 목표가 없을 때. 목록 자리에 깃발 아이콘 + 안내 문구를 두고, 위쪽 [+ 새 목표]로 시작하도록 안내해요. (오른쪽 패널의 [진행 목표 0개] 버튼으로 직접 볼 수 있어요)",steps:[["","진행 중 0/3",{set:{view:"home",prem:false,goals0:true}}]]},
- {h:"무료 · 진행 목표 3개 슬롯",p:"무료 이용자는 동시에 3개까지. 3/3에서 [새 목표]를 누르면 프리미엄 안내. 목표 하나에 도착하면 기록(여권 도장 · 엽서)으로 쌓이고, 홈에 빈 슬롯이 열려 바로 새 목표를 시작할 수 있어요.",steps:[["","3/3 · 슬롯 가득",{set:{view:"home",prem:false}}],["","새 목표 → 슬롯 안내",{set:{view:"goalCap",upBase:"home",prem:false}}],["","도착 → 빈 슬롯 열림",{all:true,set:{view:"home",prem:false}}],["","빈 슬롯 → 새 목표",{all:true,set:{view:"input",prem:false}}]]},
+ {h:"무료 · 진행 목표 3개 슬롯",p:"무료 이용자는 동시에 3개까지. 3/3에서 [새 목표]를 누르면 프리미엄 안내. 목표 하나에 도착하면 기록(여권 도장 · 엽서)으로 쌓이고, 진행 목표 수가 줄어 [+ 새 목표]로 바로 새 목표를 시작할 수 있어요.",steps:[["","3/3 · 슬롯 가득",{set:{view:"home",prem:false}}],["","새 목표 → 슬롯 안내",{set:{view:"goalCap",upBase:"home",prem:false}}],["","도착 → 진행 목표 2/3",{all:true,set:{view:"home",prem:false}}],["","[+ 새 목표] → 새 목표",{all:true,set:{view:"input",prem:false}}]]},
  {h:"무료 · 기록은 최근 3개까지",p:"도착한 기록은 날짜 기준 최근 3개만 열려요. 그 이전 기록은 지워지지 않고 잠긴 채 보이고, 누르면 프리미엄 안내.",steps:[["","도장 · 지난 기록 잠금",{set:{view:"rec",recTab:"stamp",prem:false}}],["","엽서 · 지난 기록 잠금",{set:{view:"rec",recTab:"pc",prem:false}}],["","잠긴 기록 → 안내",{set:{view:"recLock",upBase:"rec",recTab:"stamp",prem:false}}]]},
  {h:"프리미엄 이용자",p:"광고 없음 · 진행 목표 제한 없음(여행 중인 친구와도 또 떠날 수 있어요) · 모든 기록 · 치밀하게 쪼개기 선택 가능.",steps:[["","홈 · 광고 없음 · 목표 제한 없음",{set:{view:"home",prem:true}}],["","모든 기록 열림",{set:{view:"rec",recTab:"stamp",prem:true}}],["","치밀하게 선택 가능",{set:{view:"input",prem:true,draft:{title:"이력서 업데이트",fi:0,level:3,tasks:[]}}}],["","마이 · 프리미엄 이용 중",{set:{view:"me",prem:true}}]]},
  {h:"치밀하게 쪼개기 (프리미엄)",p:"쪼개기 크기 중 치밀하게는 프리미엄 배지만 보이고 선택되지 않아요. 누르면 지금 목표로 치밀하게 쪼갠 예시 3단계와 함께 출시 알림 · 혜택 보기로 이어져요.",steps:[["","S9 치밀하게 = 프리미엄 배지",{set:{view:"input"}}],["","프리미엄 안내 시트",{set:{view:"lvlPrem",lvlBase:"input",draft:{title:"이력서 업데이트",fi:0,level:1,tasks:[]}}}],["","출시 알림 받기",{set:{view:"premiumMail",premFrom:"input"}}]]},
@@ -1287,10 +1301,13 @@ function buildFlow(){
   f.querySelectorAll(".mini button, .mini input").forEach(n=>{n.tabIndex=-1;n.setAttribute("aria-hidden","true");});
   S=keep;
 }
-const tP=document.getElementById("tabPlay"), tPr=document.getElementById("tabPrem"), tF=document.getElementById("tabFlow");
-function tab(flow,prem){ tP.setAttribute("aria-selected",!flow&&!prem); tPr.setAttribute("aria-selected",!flow&&!!prem); tF.setAttribute("aria-selected",flow); document.getElementById("play").hidden=flow; document.getElementById("flow").hidden=!flow; if(flow){ buildFlow(); return; } if(PLAN.premium!==!!prem){ if(["goalCap","recLock","lvlPrem"].includes(S.view)) S.view=S.upBase||S.lvlBase||"home"; stopTick(); clearInterval(splitT); S.running=false; PLAN_ST[PLAN.premium?"prem":"free"]=S; PLAN.premium=!!prem; const nx=PLAN_ST[prem?"prem":"free"]; if(nx) S=nx; else { fresh(); S.log=[prem?"프리미엄 이용자 · 홈":"무료 이용자 · 홈"]; } planNote(); render(); } }
+const tP=document.getElementById("tabPlay"), tPr=document.getElementById("tabPrem"), tF=document.getElementById("tabFlow"), tZ=document.getElementById("tabZero");
+let MODE="free";
+function tab(mode){ [["zero",tZ],["free",tP],["prem",tPr],["flow",tF]].forEach(([m,el])=>el.setAttribute("aria-selected",m===mode)); const flow=mode==="flow"; document.getElementById("play").hidden=flow; document.getElementById("flow").hidden=!flow; if(flow){ buildFlow(); return; }
+  if(mode===MODE) return; if(["goalCap","recLock","lvlPrem","micSheet"].includes(S.view)) S.view=S.upBase||S.lvlBase||"input"; stopTick(); clearInterval(splitT); clearTimeout(auSplashT); S.running=false; PLAN_ST[MODE]=S; MODE=mode; PLAN.premium=mode==="prem";
+  const nx=PLAN_ST[mode]; if(nx) S=nx; else if(mode==="zero") freshZero(); else { fresh(); S.log=[mode==="prem"?"프리미엄 이용자 · 홈":"무료 이용자 · 홈"]; } planNote(); render(); }
 document.getElementById("emptyBtn").addEventListener("click",emptyStart);
-tP.onclick=()=>tab(false,false); tPr.onclick=()=>tab(false,true); tF.onclick=()=>tab(true); planNote();
+tZ.onclick=()=>tab("zero"); tP.onclick=()=>tab("free"); tPr.onclick=()=>tab("prem"); tF.onclick=()=>tab("flow"); planNote();
 
 </script>
 </body></html>
