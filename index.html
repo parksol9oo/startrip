@@ -45,6 +45,7 @@ h1{font-size:22px;margin:0 0 4px;text-wrap:balance}
 .seg{display:flex;background:#EEF4F9;border-radius:999px;padding:4px}
 .seg button{flex:1;background:none;border-radius:999px;padding:10px 0;font-weight:900;color:var(--sub);font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--yel);color:var(--ink)}
+.memo::placeholder{color:#B5C2CE;font-weight:500}
 .memo{width:100%;border:0;background:#fff;border-radius:16px;padding:14px 16px;font:inherit;font-size:15px;box-shadow:var(--sh);margin-top:8px}
 .memo:focus{outline:2px solid var(--co)}
 .toast{position:absolute;left:20px;right:20px;top:90px;z-index:8;background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;font-size:14px;font-weight:700;transition:opacity .3s}
@@ -895,7 +896,7 @@ function view(S){
     h=`<div class="scr" style="background:linear-gradient(180deg,#D3EDFF,#F2FAFF 40%)">${back}
      <div class="t">오늘 어떤 여행을<br>시작할까요?</div>
      <label for="goalIn" style="position:absolute;left:-9999px">목표</label>
-     <div style="position:relative;margin-top:16px"><input id="goalIn" class="memo" style="margin-top:0;height:60px;font-size:18px;font-weight:700;padding-right:62px" value="${S.draft.title.replace(/"/g,"&quot;")}"><button data-a="micGo" aria-label="말로 입력하기" style="position:absolute;right:8px;top:8px;width:44px;height:44px;border-radius:50%;background:#FFF0EB;color:var(--co);display:flex;align-items:center;justify-content:center">${MIC_IC(22)}</button></div>
+     <div style="position:relative;margin-top:16px"><input id="goalIn" class="memo" style="margin-top:0;height:60px;font-size:18px;font-weight:700;padding-right:62px" placeholder="예) 포트폴리오 만들기" value="${S.draft.title.replace(/"/g,"&quot;")}"><button data-a="micGo" aria-label="말로 입력하기" style="position:absolute;right:8px;top:8px;width:44px;height:44px;border-radius:50%;background:#FFF0EB;color:var(--co);display:flex;align-items:center;justify-content:center">${MIC_IC(22)}</button></div>
      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;position:relative">${["이력서 업데이트","운동 루틴 만들기"].map(x=>`<button data-pick="${x}" style="display:inline-flex;align-items:center;gap:4px;border-radius:999px;background:rgba(255,255,255,.75);padding:5px 11px;font-size:12px;font-weight:700;color:var(--sub)">${I_("rot",12)} ${x}</button>`).join("")}</div>
      <div style="font-size:15px;font-weight:900;margin:20px 0 8px;position:relative">어떤 크기로 나눌까요?</div>
      <div role="radiogroup" aria-label="쪼개기 크기" style="display:flex;flex-direction:column;gap:7px;position:relative">${LEVELS.map((l,i)=>{const on=i===S.draft.level; return `<button role="radio" aria-checked="${on}" data-lvl="${i}" class="card" style="text-align:left;display:flex;align-items:center;gap:10px;padding:10px 14px;${on||(i===3&&S.lvlHi)?"box-shadow:0 0 0 2px var(--co),var(--sh)":""}"><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:900">${l[0]}</div><div style="font-size:11.5px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l[1]}</div></div>${i===3&&!isPrem(S)?lvlBadge:`<span style="flex:none;width:20px;height:20px;border-radius:50%;border:2px solid ${on?"var(--co)":"#C9D4DE"};display:flex;align-items:center;justify-content:center">${on?`<i style="width:9px;height:9px;border-radius:50%;background:var(--co)"></i>`:""}</span>`}</button>`;}).join("")}</div>
@@ -1193,7 +1194,7 @@ ph.addEventListener("click",e=>{
   if(d.lvl!==undefined){ const gi=ph.querySelector("#goalIn"); if(gi) S.draft.title=gi.value; if(+d.lvl===3&&!isPrem(S)){ S.lvlBase=S.view; go("lvlPrem","치밀하게 → 프리미엄 안내"); return; } S.draft.level=+d.lvl; render(); return; }
   const a=d.a;
   if(a==="back2"){ go(PREV[S.view]||"home","←"); }
-  if(a==="new"){ S.draft={title:"포트폴리오 만들기",fi:firstFree(),level:1,tasks:[]}; go("input","새 목표"); }
+  if(a==="new"){ S.draft={title:"",fi:firstFree(),level:1,tasks:[]}; go("input","새 목표"); }
   if(a==="toFriend"){ const v=ph.querySelector("#goalIn").value.trim(); if(!v){ S.toast="목표를 한 줄 적어주세요"; render(); return; } S.draft.title=v; go("friend","친구 고르기"); }
   if(a==="fprev"){ S.draft.fi=(S.draft.fi+4)%5; render(); }
   if(a==="fnext"){ S.draft.fi=(S.draft.fi+1)%5; render(); }
