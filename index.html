@@ -161,6 +161,9 @@ view=function(S){ const h=__viewBase(S); if(!AD_VIEWS.includes(S.view)||S.bagFro
 /* 단계별 도착지 힌트(간접적으로) + 도착 창문 공개 */
 CODE.reveal="S16-1 도착 · 창문 공개";
 const HINT={"일본":[["🧭","동쪽 끝, 바다로 둘러싸인 섬나라예요"],["🌡️","여름엔 장마, 가을엔 태풍이 지나가요"],["🍽️","면을 소리 내서 먹어도 괜찮은 곳"],["🗣️","글자를 세 종류나 섞어서 써요"]],"이탈리아":[["🌡️","여름이 길고 건조한 바닷가 나라"],["🍽️","카푸치노는 아침에만 마신다는 사람이 많아요"],["🧭","반도 끝에 큰 섬이 둘 붙어 있어요"],["🗣️","손짓이 말만큼 중요한 대화"]],"미국":[["🧭","큰 바다 두 개 사이에 걸쳐 있어요"],["🌡️","한 나라 안에 시간대가 여러 개예요"],["🍽️","음료 리필이 공짜인 식당이 많아요"],["🗣️","길이를 잴 때 피트와 마일을 써요"]],"네덜란드":[["🧭","땅의 꽤 많은 부분이 바다보다 낮아요"],["🌡️","비가 자주 오고 산이 거의 없어요"],["🍽️","치즈를 자동차 바퀴처럼 크게 만들어요"],["🗣️","사람들 평균 키가 세계에서 손꼽히게 커요"]],"인도":[["🌡️","여름 우기에 비가 몰아서 와요"],["🍽️","오른손으로 밥을 먹는 사람이 많아요"],["🧭","세계에서 사람이 가장 많은 나라 중 하나"],["🗣️","공용어로 인정된 언어가 20개가 넘어요"]],"호주":[["🌡️","12월에 여름이 와요"],["🧭","나라 하나가 대륙 하나예요"],["🍽️","까맣고 짭짤한 잼을 빵에 발라요"],["🗣️","영어를 쓰지만 줄임말을 아주 좋아해요"]],"한국":[["🌡️","사계절이 뚜렷해요"],["🍽️","식탁에 작은 반찬 그릇이 여러 개 놓여요"],["🧭","반도의 남쪽 절반이에요"],["🗣️","처음 만나면 나이를 묻는 경우가 많아요"]],"프랑스":[["🍽️","점심을 두 시간 가까이 먹기도 해요"],["🌡️","북쪽은 서늘하고 남쪽은 지중해 날씨"],["🧭","지도 모양 때문에 '육각형'이라고 불려요"],["🗣️","숫자 99를 4×20+19로 읽어요"]],"이집트":[["🌡️","일 년 내내 비가 거의 오지 않아요"],["🧭","아프리카와 아시아에 걸쳐 있어요"],["🍽️","콩을 으깬 요리로 아침을 먹어요"],["🗣️","옛 글자가 그림처럼 생겼어요"]],"영국":[["🌡️","하루에 사계절이 다 있다는 날씨"],["🍽️","생선튀김과 감자튀김을 함께 먹어요"],["🧭","섬나라지만 바다 밑 터널로 대륙과 이어져요"],["🗣️","자동차가 도로 왼쪽으로 달려요"]],"멕시코":[["🌡️","높은 고원 위 수도는 일 년 내내 봄 같아요"],["🍽️","옥수수 반죽을 얇게 구워 무엇이든 싸 먹어요"],["🧭","북쪽 이웃 나라와 아주 긴 국경을 맞대요"],["🗣️","세상을 떠난 이를 기리는 날이 축제처럼 화려해요"]]};
+/* 힌트 순서: 마지막 단계 전까지 끝낸 단계 수(dn)로 1~4번 힌트를 차례로 열어요. 단계가 적으면(마지막 전 단계 m<4) 1번부터 m번까지만 열려요 */
+const hintK=(dn,n)=>{ const m=Math.max(1,n-1); return Math.max(1,Math.min(4, m>=4?Math.ceil(dn*4/m):dn)); };
+const hintsGot=g=>{ const n=g.tasks.length, m=Math.max(0,n-1), done=Math.min(m,g.tasks.filter(t=>t.st==="done").length), got=new Set(); for(let d=1;d<=done;d++) got.add(hintK(d,n)); return got; };
 const hintsOf=c=>HINT[c]||[["🌡️","어딘가 따뜻한 곳"],["🍽️","처음 먹어보는 음식이 있어요"],["🧭","지도에서 찾아봐요"],["🗣️","처음 듣는 말을 써요"]];
 function revealView(S){ const g=S.goals[S.gi], hs=hintsOf(g.country);
   return `<div class="scr" style="background:linear-gradient(180deg,#1D2B3A,#3B5A7A 60%,#7FA9CC);color:#fff"><style>#rvWin .rvc1{transition:transform .8s cubic-bezier(.55,0,.25,1);animation:rvn 1.8s ease-in-out infinite}#rvWin.open .rvc1{animation:none;transform:translateY(-104%)}@keyframes rvn{0%,60%,100%{transform:translateY(0)}75%{transform:translateY(-7%)}}</style>
@@ -168,11 +171,11 @@ function revealView(S){ const g=S.goals[S.gi], hs=hintsOf(g.country);
    <button id="rvWin" data-a="revealOpen" aria-label="창문 열어서 도착한 나라 보기" style="position:relative;margin:26px auto 0;width:236px;height:316px;border-radius:118px;border:14px solid #E9EEF3;background:linear-gradient(180deg,#8FCFF8,#E6F5FF);overflow:hidden;box-shadow:0 18px 36px rgba(0,0,0,.35);padding:0">
      <img src="${IMG.pc[(PC[g.country]||PC["프랑스"]).k]}" alt="${g.country} 풍경" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center">
      <div class="rvc1" style="position:absolute;left:0;right:0;top:0;height:100%;background:repeating-linear-gradient(180deg,#F6F8FA 0 22px,#ECF0F4 22px 24px);box-shadow:inset 0 -2px 0 #D5DDE5,0 6px 10px rgba(0,0,0,.18)"><div style="position:absolute;left:0;right:0;top:44%;text-align:center;font-weight:900;color:var(--ink);font-size:15px">탭해서 올리기</div><div style="position:absolute;left:0;right:0;top:51%;text-align:center;font-size:18px;color:#9AA6B2">↑</div><div style="position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:64px;height:10px;border-radius:6px;background:#C9D2DB;box-shadow:inset 0 2px 0 rgba(0,0,0,.08)"></div></div></button>
-   <div style="margin-top:20px;position:relative;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 14px"><div style="font-size:12px;color:#C9D4F0;font-weight:800;margin-bottom:6px">모은 힌트</div>${hs.map(h=>`<div style="font-size:12.5px;line-height:1.6">${h[0]} ${h[1]}</div>`).join("")}</div>
+   <div style="margin-top:20px;position:relative;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 14px"><div style="font-size:12px;color:#C9D4F0;font-weight:800;margin-bottom:6px">모은 힌트 ${hintsGot(g).size}/4</div>${hs.map((h,i)=>hintsGot(g).has(i+1)?`<div style="font-size:12.5px;line-height:1.6">${h[0]} ${h[1]}</div>`:`<div style="font-size:12.5px;line-height:1.6;color:#9FB2CC">🔒 이번 여정에서 열지 못한 힌트</div>`).join("")}${hintsGot(g).size<4?`<div style="font-size:11px;color:#C9D4F0;margin-top:6px">단계가 많을수록 힌트를 더 모을 수 있어요</div>`:""}</div>
    <div class="sp"></div></div>`; }
 const __viewAd=view;
 view=function(S){ if(S.view==="reveal") return revealView(S); let h=__viewAd(S); const g=S.goals&&S.goals[S.gi]; if(!g) return h;
-  if(S.view==="summary"&&!g.tasks.every(x=>x.st==="done")){ const last=S.lastDone||g.tasks[0]; if(last.st==="done"){ const n=g.tasks.length, dn=g.tasks.filter(x=>x.st==="done").length, k=Math.max(1,Math.min(4,Math.round(dn/n*4))), hs=hintsOf(g.country);
+  if(S.view==="summary"&&!g.tasks.every(x=>x.st==="done")){ const last=S.lastDone||g.tasks[0]; if(last.st==="done"){ const n=g.tasks.length, dn=g.tasks.filter(x=>x.st==="done").length, k=hintK(dn,n), hs=hintsOf(g.country);
     const card=`<div class="card" style="margin-top:12px;display:flex;align-items:center;gap:12px;padding:12px 14px;background:#FFF7E6"><span style="font-size:28px">${hs[k-1][0]}</span><span style="flex:1;min-width:0"><span style="display:block;font-size:11px;font-weight:900;color:#B98A00;letter-spacing:.5px">도착지 힌트 ${k}/4 · 어디로 가고 있을까요?</span><b style="font-size:15px">${hs[k-1][1]}</b></span></div>`;
     const m='<div class="sp"></div><button class="btn" data-a="ok">'; if(h.includes(m)) h=h.replace(m,card+m); } }
   return h; };
@@ -671,7 +674,7 @@ function rainOff(){ if(!SND.rain) return; const {s,g,drip}=SND.rain; clearInterv
 function musicOn(){ if(!SND.on||!SND.bgm||SND.mus) return; const c=actx(); if(!c) return; SND.step=0; SND.next=c.currentTime+.05; SND.mus=setInterval(musicTick,60); musicTick(); }
 function musicOff(){ if(SND.mus){ clearInterval(SND.mus); SND.mus=null; } }
 function sndSync(){ (S.view==="run"&&S.running&&SND.bgm)?musicOn():musicOff(); rainOff(); const mb=ph.querySelector("[data-a=bgm]"); if(mb){ mb.innerHTML=bgmIcon(); mb.setAttribute("aria-label",SND.bgm?"배경음 끄기":"배경음 켜기"); } const b=document.getElementById("sndBtn"); if(b) b.textContent=SND.on?"소리 켜짐":"소리 꺼짐"; }
-function go(v,label){ if(["home","dist","summary","gift","arrive","route","setup","reveal"].includes(v)) S.running=false; const pv=S.view; S.view=v; if(pv!==v){ if(v==="gift") sfx("gift"); else if(v==="arrive") sfx("arrive"); else if(v==="dist") sfx("jump"); } if(label) S.log.push(label); render(); }
+function go(v,label){ if(["home","dist","summary","gift","arrive","route","setup","reveal"].includes(v)) S.running=false; const pv=S.view; if(pv&&pv!==v&&!S._swBack){ (S.vh=S.vh||[]).push(pv); if(S.vh.length>40) S.vh.shift(); } S.view=v; if(pv!==v){ if(v==="gift") sfx("gift"); else if(v==="arrive") sfx("arrive"); else if(v==="dist") sfx("jump"); } if(label) S.log.push(label); render(); }
 function runLayers(g,f){ const Sd=IMG.side, im=s=>s?`<img src="${s}" alt="" style="position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated">`:"";
   const bg=g.bag&&Sd.bag[g.bag]?Sd.bag[g.bag][f]:"", car=g.bag==="carrier";
   return (car?im(bg):"")+im(Sd.base[g.friend][f])+(car?"":im(bg))+im(g.shoes&&Sd.shoes[g.shoes]?Sd.shoes[g.shoes][f]:"")+im(g.acc&&Sd.acc[g.acc]?Sd.acc[g.acc][g.friend][f]:"")+im(g.hat&&Sd.hat[g.hat]?(g.friend==="rabbit"?Sd.hatR:Sd.hat)[g.hat][f]:""); }
@@ -1271,6 +1274,33 @@ ph.addEventListener("click",e=>{
   if(a==="bagTab") go("bagTab","가방 탭");
 });
 ph.addEventListener("input",e=>{ if(e.target.id==="goalIn") S.draft.title=e.target.value; });
+/* 오른쪽 스와이프 → 이전 화면 */
+(()=>{
+  const BTN_RE=/Back|Close|Cancel|^back2?$/;
+  const ROOT=["home","bagTab","rec","me","splash","run","rest","gift","arrive","reveal","summary","dist","premiumDone"];
+  const vis=el=>{ const r=el.getBoundingClientRect(); return r.width>0&&r.height>0&&getComputedStyle(el).visibility!=="hidden"; };
+  function swipeBack(){
+    const cands=[...ph.querySelectorAll('[data-a],[aria-label="뒤로"],[aria-label="닫기"]')].filter(el=>{ const a=el.dataset.a||""; return (BTN_RE.test(a)||/^(뒤로|닫기)$/.test(el.getAttribute("aria-label")||""))&&!el.disabled&&vis(el); });
+    if(cands.length){ cands[cands.length-1].click(); return true; }
+    if(ROOT.includes(S.view)) return false;
+    const vh=S.vh||[]; let pv; while(vh.length&&(pv=vh.pop())===S.view);
+    if(!pv||pv===S.view) return false;
+    S._swBack=true; try{ go(pv,"스와이프 → 이전 화면"); } finally{ S._swBack=false; }
+    return true;
+  }
+  const SKIP='input,textarea,select,[data-row],[data-grip],#ppScroll,[data-noswipe]';
+  let st=null, eat=false;
+  const begin=(x,y,t)=>{ st=null; if(t&&t.closest&&t.closest(SKIP)) return; if(S.sw!=null||S.dragI!=null) return; let n=t; while(n&&n!==ph){ if(n.scrollWidth>n.clientWidth+2&&/(auto|scroll)/.test(getComputedStyle(n).overflowX)) return; n=n.parentElement; } st={x,y,t:Date.now()}; };
+  const end=(x,y)=>{ if(!st) return; const dx=x-st.x, dy=Math.abs(y-st.y), dt=Date.now()-st.t; st=null; if(dx>70&&dy<dx*0.5&&dt<800) swipeBack(); if(dx>30&&dy<dx){ eat=true; setTimeout(()=>eat=false,350); } };
+  ph.addEventListener("touchstart",e=>{ const p=e.touches[0]; if(e.touches.length===1) begin(p.clientX,p.clientY,e.target); else st=null; },{passive:true});
+  ph.addEventListener("touchend",e=>{ const p=e.changedTouches[0]; end(p.clientX,p.clientY); },{passive:true});
+  ph.addEventListener("touchcancel",()=>{ st=null; },{passive:true});
+  let tch=0; ph.addEventListener("touchstart",()=>{ tch=Date.now(); },{passive:true,capture:true});
+  ph.addEventListener("mousedown",e=>{ if(Date.now()-tch<800||e.button!==0) return; begin(e.clientX,e.clientY,e.target); });
+  window.addEventListener("mouseup",e=>{ if(Date.now()-tch<800) return; end(e.clientX,e.clientY); });
+  ph.addEventListener("click",e=>{ if(eat){ e.stopPropagation(); e.preventDefault(); } },true);
+})();
+
 const BGN={desert:"사막",beach:"바닷가",snow:"설국",jungle:"정글",city:"도시",forest:"숲"};
 document.getElementById("bgPick").addEventListener("click",e=>{ const w=e.target.closest("[data-wx]"); if(w){ const k=w.dataset.wx; S.wx=S.wx||{tod:"day",rain:false}; if(k==="rand"){ S.wxLock=false; wxRoll(); } else if(k==="rain"){ S.wx.rain=!S.wx.rain; S.wxLock=true; } else { S.wx.tod=k; S.wxLock=true; } render(); return; } const b=e.target.closest("[data-setbg]"); if(!b) return; G().bg=b.dataset.setbg; render(); });
 (function(){ const ic=gk=>`<img src="${IMG.L.icon[gk]}" alt="" style="width:30px;height:26px;object-fit:contain;flex:none">`;
