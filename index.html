@@ -1379,11 +1379,24 @@ tZ.onclick=()=>tab("zero"); tP.onclick=()=>tab("free"); tPr.onclick=()=>tab("pre
       const walking=!!st.running; if(walking){ st.view="rest"; st.bagFromRun=false; }  /* 걷던 중이면 '잠깐 쉬기'로 멈춘 채 복원 */
       if(typeof d.nextB==="number") nextB=d.nextB; if(typeof d.nextC==="number") nextC=d.nextC;
       S=st; if(walking) startTick(); return true; }catch(e){ return false; } }
-  const __renderSave=render; let saveT=null;
-  render=function(){ __renderSave(); clearTimeout(saveT); saveT=setTimeout(snap,150); };
+  const __renderSave=render; let saveT=null, updPending=null, updLast=0;   /* upd*: 아래 자동 업데이트에서 사용 */
+  render=function(){ __renderSave(); clearTimeout(saveT); saveT=setTimeout(snap,150); if(updPending) setTimeout(applyUpdate,0); };
   setInterval(()=>{ if(S&&S.running) snap(); },5000);                                /* 걷는 동안 타이머는 화면을 다시 그리지 않아서 따로 저장 */
   window.addEventListener("pagehide",snap); document.addEventListener("visibilitychange",()=>{ if(document.hidden) snap(); });
   if(load()) render();
+  /* 자동 업데이트: 홈 화면 앱은 iOS 가 재워 뒀다 그대로 깨워서 새 배포가 반영되지 않아요.
+     앱이 다시 보일 때 서버의 index.html 수정 시각(Last-Modified)을 캐시 없이 확인하고, 지금 떠 있는 문서보다 새로우면
+     홈 · 탭 화면처럼 안전한 시점에 저장 후 새로 불러와요. 걷는 중 · 입력 중에는 미뤄 뒀다가 홈으로 돌아오면 적용해요. */
+  const SAFE_VIEWS=["home","bagTab","rec","me","all","splash","auStart"], UPD_KEY="startrip:app:upd";
+  const loadedAt=Date.parse(document.lastModified)||0;
+  function applyUpdate(){ if(!updPending||!S||S.running||!SAFE_VIEWS.includes(S.view)) return;
+    try{ if(localStorage.getItem(UPD_KEY)===updPending){ updPending=null; return; } localStorage.setItem(UPD_KEY,updPending); }catch(e){}  /* 같은 버전으로 두 번 새로고침하지 않기 */
+    snap(); const u=new URL(location.href); u.searchParams.set("u",Date.now().toString(36)); location.replace(u.toString()); }
+  function checkUpdate(){ const now=Date.now(); if(document.hidden||!loadedAt||now-updLast<60000) return; updLast=now;
+    fetch(location.pathname,{method:"HEAD",cache:"no-store"}).then(res=>{ const lm=res.ok?res.headers.get("Last-Modified"):null, t=lm?Date.parse(lm):0;
+      if(t&&t>loadedAt+1000){ updPending=lm; applyUpdate(); } }).catch(()=>{}); }
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkUpdate(); }); window.addEventListener("pageshow",checkUpdate);
+  setTimeout(checkUpdate,4000); setInterval(checkUpdate,30*60*1000);
   const r=document.documentElement;
   /* 안전영역(노치 · 홈 인디케이터) 크기를 px 로 읽기 위한 측정용 요소. 데스크톱에서 미리 보려면 ?app=zero&safe=59,34 (위,아래) */
   const probe=document.createElement("div"); probe.style.cssText="position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)"; document.body.appendChild(probe);
