@@ -1275,6 +1275,19 @@ ph.addEventListener("click",e=>{
   if(a==="bagTab") go("bagTab","가방 탭");
 });
 ph.addEventListener("input",e=>{ if(e.target.id==="goalIn") S.draft.title=e.target.value; });
+/* 같은 화면을 다시 그릴 때(아이템 선택 등) 리스트 스크롤 위치 유지 */
+(()=>{
+  const prev=render; let shown=null;
+  const sig=()=>S.view+"|"+(S.bagCat||"");
+  const scrollers=()=>[...ph.querySelectorAll('[style*="overflow"]')].filter(el=>!el.closest(".whcol")&&el.id!=="ppScroll"&&/(auto|scroll)/.test(getComputedStyle(el).overflowY+" "+getComputedStyle(el).overflowX));
+  render=function(){
+    const k=shown, pos=scrollers().map(el=>[el.scrollTop,el.scrollLeft]);
+    prev.apply(this,arguments);
+    shown=sig(); if(k!==shown) return;
+    const els=scrollers(); if(els.length!==pos.length) return;
+    els.forEach((el,i)=>{ if(pos[i][0]) el.scrollTop=pos[i][0]; if(pos[i][1]) el.scrollLeft=pos[i][1]; });
+  };
+})();
 /* 오른쪽 스와이프 → 이전 화면 */
 (()=>{
   const BTN_RE=/Back|Close|Cancel|^back2?$/;
