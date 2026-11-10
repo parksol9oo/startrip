@@ -99,20 +99,19 @@ h1{font-size:22px;margin:0 0 4px;text-wrap:balance}
 button{color:inherit;-webkit-tap-highlight-color:transparent}input,textarea{color:var(--ink)}
 .rainfx{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27120%27%20height%3D%27120%27%3E%3Cg%20stroke%3D%27white%27%20stroke-width%3D%271.6%27%20stroke-linecap%3D%27round%27%20opacity%3D%27.7%27%3E%3Cline%20x1%3D%2710%27%20y1%3D%278%27%20x2%3D%276%27%20y2%3D%2722%27/%3E%3Cline%20x1%3D%2748%27%20y1%3D%2730%27%20x2%3D%2744%27%20y2%3D%2744%27/%3E%3Cline%20x1%3D%2790%27%20y1%3D%274%27%20x2%3D%2786%27%20y2%3D%2718%27/%3E%3Cline%20x1%3D%2730%27%20y1%3D%2770%27%20x2%3D%2726%27%20y2%3D%2784%27/%3E%3Cline%20x1%3D%2770%27%20y1%3D%2760%27%20x2%3D%2766%27%20y2%3D%2774%27/%3E%3Cline%20x1%3D%27108%27%20y1%3D%2780%27%20x2%3D%27104%27%20y2%3D%2794%27/%3E%3Cline%20x1%3D%2716%27%20y1%3D%27104%27%20x2%3D%2712%27%20y2%3D%27118%27/%3E%3Cline%20x1%3D%2760%27%20y1%3D%27100%27%20x2%3D%2756%27%20y2%3D%27114%27/%3E%3C/g%3E%3C/svg%3E");background-size:160px 160px;animation:rainfall .7s linear infinite;opacity:.35}@keyframes rainfall{to{background-position:-40px 160px}}.nightui .hdr{color:#fff}.nightui .hdr [style*="var(--sub)"]{color:#C9D4F0 !important}
 .nomotion *{animation:none!important;transition:none!important}
-/* 앱 모드 (test.html · ?app): 설명 패널 · 탭을 숨기고 폰 화면만 뷰포트에 맞춰 보여줘요 */
-html.app{--appTop:env(safe-area-inset-top,0px);--appBottom:env(safe-area-inset-bottom,0px)}
+/* 앱 모드 (test.html · ?app): 설명 패널 · 탭을 숨기고 폰 화면만 보여줘요.
+   가로 390 기준으로 스케일하고, 세로는 기기 화면 끝까지 채워요(--appH). 상태바 아래에서 시작해 바닥까지 닿고,
+   홈 인디케이터 영역(--appBottom)은 탭바 · 버튼의 아래 여백으로 흡수해요. 값은 아래 앱 모드 스크립트의 fit() 이 넣어요. */
+html.app{--appBottom:0px}
 html.app,html.app body{height:100%;overflow:hidden;overscroll-behavior:none}
 html.app body{padding:0;background:#A9DBFF;background:linear-gradient(180deg,var(--sky1),var(--sky2) 60%)}
 html.app .tabs,html.app .side,html.app #play>div:first-child>div:not(.ph){display:none!important}
 html.app .wrap{display:block;max-width:none;margin:0}
-html.app #play>div:first-child{position:fixed;left:50%;top:50%;width:390px;height:760px;transform:translate(-50%,-50%) scale(var(--appScale,1));transform-origin:center;gap:0}
-html.app .ph{width:390px;height:760px;border-radius:0;box-shadow:none}
-html.app .ph .scr{padding-top:calc(16px + var(--appTop,0px));padding-bottom:calc(24px + var(--appBottom,0px))}
-html.app .toast{top:calc(90px + var(--appTop,0px))}
-html.app .ph .tabbar{padding-bottom:calc(16px + var(--appBottom,0px))}
-html.app .ph .sheet{padding-bottom:calc(28px + var(--appBottom,0px))}
-html.app .ph .top{margin-top:calc(6px + var(--appTop,0px)/3)}
-html.app .ph .fab{bottom:calc(14px + var(--appBottom,0px))}
+html.app #play>div:first-child{position:fixed;left:50%;top:var(--appTopPx,0px);width:390px;height:var(--appH,760px);transform:translateX(-50%) scale(var(--appScale,1));transform-origin:top center;gap:0}
+html.app .ph{width:390px;height:var(--appH,760px);border-radius:0;box-shadow:none}
+html.app .ph .scr{padding-bottom:max(24px,calc(var(--appBottom) + 8px))}
+html.app .ph .tabbar{padding-bottom:max(16px,calc(var(--appBottom) + 2px))}
+html.app .ph .sheet{padding-bottom:max(28px,calc(var(--appBottom) + 8px))}
 .cdrift{animation-name:cdrift;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
 @keyframes cdrift{from{transform:translateX(-440px)}to{transform:translateX(440px)}}
 </style>
@@ -1385,12 +1384,20 @@ tZ.onclick=()=>tab("zero"); tP.onclick=()=>tab("free"); tPr.onclick=()=>tab("pre
   setInterval(()=>{ if(S&&S.running) snap(); },5000);                                /* 걷는 동안 타이머는 화면을 다시 그리지 않아서 따로 저장 */
   window.addEventListener("pagehide",snap); document.addEventListener("visibilitychange",()=>{ if(document.hidden) snap(); });
   if(load()) render();
-  const r=document.documentElement; let last=0;
-  function fit(){ const vw=window.innerWidth, vh=window.innerHeight, sc=Math.min(vw/390,vh/760);
-    /* 세로가 남으면 폰을 세로로 늘리지 않고 여백을 위·아래 안전영역처럼 써요 */
-    r.style.setProperty("--appScale",sc.toFixed(4)); if(Math.abs(sc-last)>0.001){ last=sc; } }
+  const r=document.documentElement;
+  /* 안전영역(노치 · 홈 인디케이터) 크기를 px 로 읽기 위한 측정용 요소. 데스크톱에서 미리 보려면 ?app=zero&safe=59,34 (위,아래) */
+  const probe=document.createElement("div"); probe.style.cssText="position:fixed;left:0;top:0;width:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)"; document.body.appendChild(probe);
+  const dbg=(q.get("safe")||"").split(",").map(Number), hasDbg=dbg.length===2&&dbg.every(n=>n>=0);
+  function fit(){ const cs=getComputedStyle(probe), st=hasDbg?dbg[0]:(parseFloat(cs.paddingTop)||0), sb=hasDbg?dbg[1]:(parseFloat(cs.paddingBottom)||0);
+    const vw=window.innerWidth, vh=window.innerHeight-st; let sc=vw/390, H=vh/sc;
+    if(H<760){ sc=vh/760; H=760; }          /* 가로로 넓은 화면(데스크톱 · 가로 모드): 높이에 맞추고 좌우 여백 */
+    else if(H>900){ H=900; }                 /* 지나치게 길쭉한 화면은 900 까지만 늘려요 */
+    r.style.setProperty("--appScale",sc.toFixed(4)); r.style.setProperty("--appH",H.toFixed(1)+"px");
+    r.style.setProperty("--appTopPx",st+"px"); r.style.setProperty("--appBottom",(sb/sc).toFixed(1)+"px"); }
   fit(); window.addEventListener("resize",fit); window.addEventListener("orientationchange",()=>setTimeout(fit,50));
   if(window.visualViewport) visualViewport.addEventListener("resize",fit);
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(r);   /* resize 이벤트가 누락되는 환경(회전 직후 · 에뮬레이터) 대비 */
+  window.addEventListener("pageshow",fit);
 })();
 
 </script>
