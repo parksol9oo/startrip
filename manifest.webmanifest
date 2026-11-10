@@ -1,6 +1,6 @@
 {
-  "name": "startrip",
-  "short_name": "startrip",
+  "name": "Startrip",
+  "short_name": "Startrip",
   "start_url": "./index.html?app=zero",
   "scope": "./",
   "display": "standalone",
