@@ -381,10 +381,14 @@ function myView(S){const v=S.view;
   return myScr("알림",myGrp([myRow("알림 받기",myTg(n.on,"ntOn"),{sub:"브라우저 알림 권한이 필요해요",last:1})])
    +myGt("알림 종류")+`<div style="flex:none;${n.on?"":"opacity:.45;pointer-events:none;"}">${myGrp([myRow("오늘 한 걸음 알림",`<span style="font-size:14px;color:var(--sub)">${n.daily}</span>`),myRow("미뤄둔 목표 다시 알려주기",myTg(n.later,"ntLater"),{sub:"3일 넘게 걷지 않은 목표"}),myRow("방해 금지 시간",`<span style="font-size:14px;color:var(--sub)">${n.quiet}</span>`,{last:1})])}</div>`
    +`<div style="flex:none;background:#FFF4D1;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;text-align:left"><b style="font-size:14px">iPhone에서 알림을 받으려면</b><span style="font-size:12.5px;color:#7A5A2A">사파리 공유 버튼 → 홈 화면에 추가 후 앱처럼 열어 주세요.</span></div>`);}
- if(v==="profileEdit"){const me=Object.assign({},S.goals[0],{friend:S.peFriend||PREF.friend});const nick=S.peNick!=null?S.peNick:PREF.nick;
-  return myScr("프로필 수정",`<div style="align-self:center;width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#A9DBFF,#E6F5FF);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;margin:8px 0">${fig(me,104)}</div>`
-   +myGt("대표 친구")+`<div style="display:flex;gap:8px">${FR.map(([k,n])=>`<button data-a="peF_${k}" aria-label="${n}" style="flex:1;aspect-ratio:1;border-radius:16px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;${(S.peFriend||PREF.friend)===k?"background:#FFF1EC;box-shadow:inset 0 0 0 2px var(--co)":"background:#F3F6F9"}">${fig({friend:k},52)}</button>`).join("")}</div>`
-   +myGt("닉네임")+`<label style="display:flex;align-items:center;height:52px;border-radius:14px;background:#F3F6F9;padding:0 16px;gap:8px"><input id="peNick" maxlength="12" value="${nick.replace(/"/g,"&quot;")}" style="flex:1;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--ink);outline:none;min-width:0"><em id="peCnt" style="font-style:normal;font-size:12px;color:var(--faint)">${nick.length}/12</em></label><div style="font-size:12px;color:#8A9AA9;margin:-4px 4px 0;text-align:left">닉네임은 공유 이미지와 엽서에 표시돼요</div>`,
+ if(v==="profileEdit"){const sel=S.peSel||profSel();const look=selLook(sel);const nick=S.peNick!=null?S.peNick:PREF.nick;const act=S.goals.map((g,i)=>[g,i]).filter(([g])=>!g.arrived);
+  const mono="filter:grayscale(1);opacity:.72";
+  const chips=`<div style="display:flex;gap:6px">${FR.map(([k,n])=>{const on=sel.t==="base"&&sel.f===k;return `<button data-a="peF_${k}" aria-label="${n}" aria-pressed="${on}" style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;padding:0"><span style="width:58px;height:58px;border-radius:50%;overflow:hidden;display:flex;justify-content:center;background:${on?"#FFF1EC":"#F3F6F9"};box-shadow:${on?"inset 0 0 0 2px var(--co)":"none"}"><span style="display:flex;${on?"":mono}">${lookBust({friend:k},58,58)}</span></span><b style="font-size:12px;color:${on?"var(--co)":"var(--sub)"}">${n}</b></button>`;}).join("")}</div>`;
+  const pi=S.pePage||0;
+  const travel=act.length?myGt("여행 중인 친구")+`<div id="peTrack" data-noswipe style="display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;margin:0 -16px;padding:2px 16px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch">${act.map(([g,i])=>{const on=sel.t==="goal"&&sel.i===i;return `<button data-a="peG_${i}" aria-label="${auEsc(g.title)} · ${(FR.find(f=>f[0]===g.friend)||[0,""])[1]}" aria-pressed="${on}" style="flex:none;width:128px;padding:10px;border-radius:18px;scroll-snap-align:start;position:relative;background:${on?"#FFF1EC":"#F3F6F9"};box-shadow:${on?"inset 0 0 0 2px var(--co)":"none"}"><span style="width:108px;height:108px;border-radius:50%;overflow:hidden;display:flex;justify-content:center;background:#fff"><span style="display:flex;${on?"":mono}">${lookBust(goalLook(g),108,108)}</span></span>${on?`<span style="position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--co);display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.4 6.2l2.2 2.2L9.6 3.6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`:""}</button>`;}).join("")}</div>`+(act.length>2?`<div id="peDots" style="display:flex;justify-content:center;gap:5px;margin-top:-4px">${act.map((_,k)=>`<i style="display:block;height:6px;border-radius:3px;width:${k===pi?14:6}px;background:${k===pi?"var(--co)":"#D3DEE8"}"></i>`).join("")}</div>`:""):"";
+  return myScr("프로필 수정",`<div style="align-self:center;width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#A9DBFF,#E6F5FF);display:flex;justify-content:center;overflow:hidden;margin:8px 0;flex:none">${lookBust(look,120,120)}</div>`
+   +chips+travel
+   +myGt("닉네임")+`<label style="display:flex;align-items:center;height:52px;border-radius:14px;background:#F3F6F9;padding:0 16px;gap:8px;flex:none"><input id="peNick" maxlength="12" value="${nick.replace(/"/g,"&quot;")}" style="flex:1;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--ink);outline:none;min-width:0"><em id="peCnt" style="font-style:normal;font-size:12px;color:var(--faint)">${nick.length}/12</em></label>`,
    "#fff",`<div style="flex:none;padding:10px 18px 24px;background:#fff"><button class="btn" data-a="peSave">저장하기</button></div>`);}
  if(v==="notice") return myScr("공지사항",`<div style="margin:-12px -16px 0">${NOTICES.map(([t,ti,d,n],i)=>`<div data-a="ntc_${i}" role="button" style="display:flex;flex-direction:column;gap:6px;padding:16px 20px;border-bottom:1px solid var(--line);text-align:left;cursor:pointer">${myTag(t)}<b style="font-size:15.5px">${ti}${n?` <span style="font-size:10px;color:#fff;background:var(--co);border-radius:999px;padding:1px 6px;vertical-align:2px">N</span>`:""}</b><span style="font-size:12px;color:var(--faint)">${d}</span></div>`).join("")}</div>`,"#fff");
  if(v==="noticeDetail"){const [t,ti,d,,body]=NOTICES[S.ntc||0];return `<div class="scr" style="padding:0;background:#fff">${myHd("공지사항","ntcBack")}<div style="flex:1;min-height:0;overflow:auto;padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;text-align:left">${myTag(t)}<div style="font-size:21px;font-weight:900;line-height:1.35">${ti}</div><span style="font-size:12px;color:var(--faint)">${d}</span><hr style="border:0;border-top:1px solid var(--line);margin:4px 0">${body.map(p=>`<p style="margin:0;font-size:14.5px;line-height:1.7;color:#3A4A5A">${p}</p>`).join("")}</div></div>`;}
@@ -409,6 +413,13 @@ const AU_FR={"토끼":"rabbit","오리":"duck","곰":"bear","다람쥐":"squirre
 function auFr(n){ const f=x=>{ const a=AU_ANI.find(k=>(x||"").endsWith(k)); return a?AU_FR[a]:null; }; return f(n)||f(AU.ph)||"rabbit"; }
 function auBust(fr,bw,bh){ const c=Math.min(bw/24,bh/25), w=Math.round(32*c); return `<div style="width:${bw}px;height:${bh}px;overflow:hidden;display:flex;justify-content:center;flex:none"><div style="margin-top:${Math.round((bh-25*c)/2-2.5*c)}px">${fig({friend:fr,hat:"straw",bag:"",shoes:"",acc:""},w)}</div></div>`; }
 const auPhoto=n=>auBust(auFr(n),80,92);
+/* 프로필 모습: 대표 친구(밀짚모자) 또는 여행 중인 친구 착장 · 상반신 크롭 */
+function lookBust(g,bw,bh){ const c=bw/28, w=Math.round(32*c); return `<div style="width:${bw}px;height:${bh}px;overflow:hidden;display:flex;justify-content:center;flex:none"><div style="margin-top:${Math.round(bh*0.05-2.5*c)}px">${fig(g,w)}</div></div>`; }
+const baseLook=f=>({friend:f||"rabbit",hat:"straw",bag:"",shoes:"",acc:""});
+const goalLook=g=>({friend:g.friend,hat:g.hat||"",bag:g.bag||"",shoes:g.shoes||"",acc:g.acc||""});
+function profSel(){ const pr=PREF.prof; if(pr&&pr.t==="goal"){ const i=(S.goals||[]).findIndex(g=>!g.arrived&&g.title===pr.title); return i>=0?{t:"goal",i}:{t:"snap"}; } return {t:"base",f:PREF.friend}; }
+function selLook(sel){ if(sel.t==="goal"&&S.goals[sel.i]) return goalLook(S.goals[sel.i]); if(sel.t==="snap"&&PREF.prof&&PREF.prof.look) return PREF.prof.look; return baseLook(sel.f||PREF.friend); }
+const profLook=()=>selLook(profSel());
 function auGen(no){ let n; do{ n=AU_VERB[Math.floor(Math.random()*AU_VERB.length)]+AU_ANI[Math.floor(Math.random()*AU_ANI.length)]; }while((no||[]).includes(n)); return n; }
 function auRoll(){ AU.ph=auGen(); AU.chips=[]; const used=[AU.ph]; AU_ANI.slice().sort(()=>Math.random()-.5).slice(0,3).forEach(a=>{ let n; do{ n=AU_VERB[Math.floor(Math.random()*AU_VERB.length)]+a; }while(used.includes(n)); used.push(n); AU.chips.push(n); }); }
 const auEsc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
@@ -828,7 +839,7 @@ function meView(S){
   return `<div class="scr" style="padding:0;background:#F3F6F9">
    <div style="flex:1;min-height:0;overflow:auto;padding:20px 16px 20px;display:flex;flex-direction:column;gap:12px">
     <div style="flex:none;background:linear-gradient(135deg,#A9DBFF,#E6F5FF);border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--sh)">
-      <div style="width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;flex:none">${auBust(PREF.friend,64,64)}</div>
+      <div style="width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;flex:none">${lookBust(profLook(),64,64)}</div>
       <div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:900">${PREF.nick}</div><div style="font-size:12.5px;color:var(--sub);margin-top:3px">${PREF.auth?PREF.auth.m+"로 로그인 중":"이 기기에 기록이 저장돼요"}</div></div>
       <button data-a="goProfile" style="background:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;color:var(--ink)">프로필 수정</button></div>
     ${premiumCard(S)}
@@ -1092,7 +1103,7 @@ ph.addEventListener("click",e=>{
   const d=el.dataset, g=G(), t=cur(g);
   if(d.a==="goSettings"){ go("settings","마이 › 환경 설정"); return; }
   if(d.a==="goNotif"){ go("notif","마이 › 알림"); return; }
-  if(d.a==="goProfile"){ S.peNick=null; S.peFriend=null; go("profileEdit","마이 › 프로필 수정"); return; }
+  if(d.a==="goProfile"){ S.peNick=null; S.peFriend=null; S.peSel=null; S.pePage=0; go("profileEdit","마이 › 프로필 수정"); return; }
   if(d.a==="goNotice"){ go("notice","마이 › 공지사항"); return; }
   if(d.a==="goContact"){ go("contact","마이 › 문의하기"); return; }
   if(d.a==="goTos"){ S.termsTab="tos"; go("terms","마이 › 이용 약관"); return; }
@@ -1176,8 +1187,8 @@ ph.addEventListener("click",e=>{
   if(d.a==="resetDo"){ if(typeof MODE!=="undefined"&&MODE==="zero"){ freshZero(); S.newUser=false; } else fresh(); S.toast="기록을 모두 지웠어요"; go("home","기록 초기화 완료"); return; }
   if(d.a==="ntOn"){ PREF.notif.on=!PREF.notif.on; savePref(); if(PREF.notif.on){ try{ if(window.Notification&&Notification.permission==="default") Notification.requestPermission(); }catch(e){} } render(); return; }
   if(d.a==="ntLater"){ PREF.notif.later=!PREF.notif.later; savePref(); render(); return; }
-  if(d.a&&d.a.startsWith("peF_")){ const ni=ph.querySelector("#peNick"); if(ni) S.peNick=ni.value; S.peFriend=d.a.slice(4); render(); return; }
-  if(d.a==="peSave"){ const ni=ph.querySelector("#peNick"); const v=(ni?ni.value:PREF.nick).trim(); if(!v){ S.toast="닉네임을 적어주세요"; render(); return; } PREF.nick=v.slice(0,12); if(S.peFriend) PREF.friend=S.peFriend; savePref(); S.toast="프로필을 저장했어요"; go("me","저장"); return; }
+  if(d.a&&(d.a.startsWith("peF_")||d.a.startsWith("peG_"))){ const ni=ph.querySelector("#peNick"); if(ni) S.peNick=ni.value; S.peSel=d.a.startsWith("peF_")?{t:"base",f:d.a.slice(4)}:{t:"goal",i:+d.a.slice(4)}; render(); return; }
+  if(d.a==="peSave"){ const ni=ph.querySelector("#peNick"); const v=(ni?ni.value:PREF.nick).trim(); if(!v){ S.toast="닉네임을 적어주세요"; render(); return; } PREF.nick=v.slice(0,12); const ps=S.peSel; if(ps&&ps.t==="base"){ PREF.friend=ps.f; PREF.prof={t:"base"}; } else if(ps&&ps.t==="goal"&&S.goals[ps.i]){ const g=S.goals[ps.i]; PREF.prof={t:"goal",title:g.title,look:goalLook(g)}; } S.peSel=null; savePref(); S.toast="프로필을 저장했어요"; go("me","저장"); return; }
   if(d.a==="ctKakao"){ S.toast="오픈채팅 링크를 연결할 자리예요"; render(); return; }
   if(d.a==="ctMail"){ S.toast="help@startrip.app 으로 메일을 보내요"; render(); return; }
   if(d.a==="ctForm"){ S.toast="의견 설문 링크를 연결할 자리예요"; render(); return; }
@@ -1288,6 +1299,7 @@ ph.addEventListener("input",e=>{ if(e.target.id==="goalIn") S.draft.title=e.targ
     els.forEach((el,i)=>{ if(pos[i][0]) el.scrollTop=pos[i][0]; if(pos[i][1]) el.scrollLeft=pos[i][1]; });
   };
 })();
+ph.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="peTrack") return; const kids=[...t.children], n=kids.length, max=t.scrollWidth-t.clientWidth; let pg=0; if(t.scrollLeft>=max-2) pg=n-1; else { let best=1e9; kids.forEach((c,k)=>{ const dd=Math.abs(c.offsetLeft-t.offsetLeft-16-t.scrollLeft); if(dd<best){best=dd;pg=k;} }); } S.pePage=pg; const d=ph.querySelector("#peDots"); if(d) [...d.children].forEach((el,k)=>{ el.style.width=(k===pg?14:6)+"px"; el.style.background=k===pg?"var(--co)":"#D3DEE8"; }); },true);
 /* 오른쪽 스와이프 → 이전 화면 */
 (()=>{
   const BTN_RE=/Back|Close|Cancel|^back2?$/;
