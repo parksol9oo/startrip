@@ -506,7 +506,7 @@ function auView(S){ const v=S.view; if(v==="auName"&&!AU.ph) auRoll();
  if(v==="withdraw"){ const g=S.goals.find(x=>x.arrived)||S.goals[0];
   return auScr(auHd("wdBack"),auTitle("정말 떠나시나요?","탈퇴하면 아래 기록이 모두 지워지고 다시 되돌릴 수 없어요.")
    +auCard(["여행 중인 목표와 단계","여권 도장 · 엽서","가방 속 아이템","구독 · 구매 내역 (구독은 먼저 해지해 주세요)"].map(t=>`<div style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;padding:5px 0"><i style="flex:none;width:5px;height:5px;border-radius:50%;background:var(--co)"></i>${t}</div>`).join(""),"12px 16px")
-   +`<div style="margin-top:12px">${auChk(AU.ack,"wdAck","안내를 모두 확인했어요",{fs:13.5})}</div><div style="flex:1;display:flex;align-items:center;justify-content:center;gap:18px;min-height:170px"><div style="transform:rotate(-6deg)">${postcard(g,130)}</div>${auRabbit(84)}</div>`,
+   +`<div style="margin-top:12px">${auChk(AU.ack,"wdAck","안내를 모두 확인했어요",{fs:13.5})}</div><div style="flex:1;display:flex;align-items:center;justify-content:center;gap:18px;min-height:170px">${g?`<div style="transform:rotate(-6deg)">${postcard(g,130)}</div>`:""}${auRabbit(84)}</div>`,
    `<div style="display:flex;flex-direction:column;gap:6px"><button class="btn g" data-a="wdBack" style="background:#fff">더 걸어볼래요</button><button data-a="wdGo" style="background:none;font-size:13px;color:${AU.ack?"#E5483A":"var(--faint)"};font-weight:700;padding:10px">탈퇴하기</button></div>`); }
  return null; }
 const __viewAu=view;
@@ -1075,8 +1075,8 @@ function stepWheels(){ const m=S.minutes||0; ph.querySelectorAll(".whcol").forEa
 function whEdit(c){ if(c.querySelector("input")) return; const isH=c.dataset.wheel==="h", m=S.minutes||0, cur=isH?Math.floor(m/60):m%60; const inp=document.createElement("input"); inp.type="number"; inp.inputMode="numeric"; inp.min=0; inp.max=isH?10:59; inp.value=cur; inp.setAttribute("aria-label",isH?"시간 직접 입력":"분 직접 입력");
   inp.style.cssText="position:absolute;left:6px;right:6px;top:"+(c.scrollTop+76)+"px;height:72px;border:0;border-radius:16px;background:#fff;box-shadow:0 0 0 2px var(--co);text-align:center;font:inherit;font-size:48px;font-weight:900;color:var(--ink);outline:none;z-index:3";
   c.style.overflowY="hidden"; c.appendChild(inp); inp.focus(); inp.select();
-  let done=false; const commit=()=>{ if(done) return; done=true; const v=parseInt(inp.value,10); if(!isNaN(v)){ const h=Math.floor((S.minutes||0)/60), mi=(S.minutes||0)%60; isH?setMin(v,mi):setMin(h,v); } render(); };
-  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") commit(); if(e.key==="Escape"){ done=true; render(); } }); inp.addEventListener("blur",commit); }
+  let done=false; const commit=(later)=>{ if(done) return; done=true; const v=parseInt(inp.value,10); if(!isNaN(v)){ const h=Math.floor((S.minutes||0)/60), mi=(S.minutes||0)%60; isH?setMin(v,mi):setMin(h,v); } if(later) setTimeout(render,0); else render(); };
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter") commit(); if(e.key==="Escape"){ done=true; render(); } }); inp.addEventListener("blur",()=>commit(true)); }  /* blur 는 다른 버튼으로 화면을 다시 그리는 도중에도 생겨서, 겹쳐 그리지 않게 다음 틱에 그려요 */
 function whStyle(c){ const mid=c.scrollTop+112; c.querySelectorAll(".whit").forEach(it=>{ const d=Math.abs(it.offsetTop+32-mid); it.style.fontSize=d<32?"56px":"28px"; it.style.opacity=d<32?"1":d<96?".3":".12"; }); }
 function whSet(c,v,smooth){ let it=c.querySelector(`.whit[data-v="${v}"]`); if(!it){ const its=[...c.querySelectorAll(".whit")]; it=its.reduce((a,b)=>Math.abs(+b.dataset.v-v)<Math.abs(+a.dataset.v-v)?b:a,its[0]); } if(it) c.scrollTo({top:it.offsetTop-80,behavior:smooth?"smooth":"auto"}); whStyle(c); }
 function whInit(){ ph.querySelectorAll(".whcol").forEach(c=>{ c.addEventListener("click",e=>{ const it=e.target.closest(".whit"); if(!it) return; const i=[...c.querySelectorAll(".whit")].indexOf(it); if(Math.abs(c.scrollTop-i*64)<4) whEdit(c); else c.scrollTo({top:i*64,behavior:"smooth"}); }); const m=S.minutes||0, v=c.dataset.wheel==="h"?Math.floor(m/60):Math.round((m%60)/5)*5; whSet(c,c.dataset.wheel==="h"?Math.min(v,10):m%60); let tm=null;
@@ -1189,7 +1189,7 @@ ph.addEventListener("click",e=>{
   if(d.a==="premiumBack"){ go("me","← 마이"); return; }
   if(d.a==="adX"){ S.adFrom=S.view; go("adSheet","배너 X"); return; }
   if(d.a==="adSheetClose"){ go(S.adFrom&&S.adFrom!=="adSheet"?S.adFrom:"home","괜찮아요"); return; }
-  if(d.a==="adSheetMore"){ go("premium","자세히 보기"); return; }
+  if(d.a==="adSheetMore"){ S.premFrom=S.adFrom&&S.adFrom!=="adSheet"?S.adFrom:"home"; go("premium","자세히 보기"); return; }
   if(d.a==="arriveWear"){ const k=g.arriveK||((COLL[g.country]||[])[0]); if(k&&hasArt(k)){ const [kc,kid]=k.split(":"); if(g[kc]!==kid){ g[kc]=kid; S.toast="바로 입혀줬어요"; } } render(); return; }
   if(d.a==="bagLocked"){ const k=d.k, c=collOf(k); S.toast=`아직 얻지 못했어요 · ${c?c+" "+setN(c)+" 아이템":"기본 아이템"}`; render(); return; }
   if(d.a==="bagNoArt"){ S.toast="입혀보기 그림을 준비 중이에요"; render(); return; }
@@ -1211,7 +1211,7 @@ ph.addEventListener("click",e=>{
   if(d.fi!==undefined){ S.draft.fi=+d.fi; render(); return; }
   if(d.lvl!==undefined){ const gi=ph.querySelector("#goalIn"); if(gi) S.draft.title=gi.value; if(+d.lvl===3&&!isPrem(S)){ S.lvlBase=S.view; go("lvlPrem","치밀하게 → 프리미엄 안내"); return; } S.draft.level=+d.lvl; render(); return; }
   const a=d.a;
-  if(a==="back2"){ go(PREV[S.view]||"home","←"); }
+  if(a==="back2"){ go(S.view==="setup"&&S.setupFrom==="route"?"route":(PREV[S.view]||"home"),"←"); }
   if(a==="new"){ S.draft={title:"",fi:firstFree(),level:1,tasks:[]}; go("input","새 목표"); }
   if(a==="toFriend"){ const v=ph.querySelector("#goalIn").value.trim(); if(!v){ S.toast="목표를 한 줄 적어주세요"; render(); return; } S.draft.title=v; go("friend","친구 고르기"); }
   if(a==="fprev"){ S.draft.fi=(S.draft.fi+4)%5; render(); }
@@ -1224,9 +1224,9 @@ ph.addEventListener("click",e=>{
   if(a==="edOk"){ saveEd(); render(); return; }
   if(a==="addOpen"){ S.adding=true; S.ed=null; S.sw=null; render(); return; }
   if(a==="addOk"){ const v=(document.getElementById("addIn")||{}).value||""; if(v.trim()){ SM().add(v.trim()); S.adding=false; S.log.push("단계 추가"); } render(); return; }
-  if(a==="createGoal"){ S.goals.unshift(mk(S.draft.title,FR[S.draft.fi][0],S.draft.tasks,0,0)); S.goals[0].pick=Math.min(S.draft.start||0,S.draft.tasks.length-1); S.draft.start=0; S.ed=null; S.sw=null; S.adding=false; S.gi=0; S.minutes=PREF.min; go("setup","목표 만들기 → 실행 세팅"); }
+  if(a==="createGoal"){ S.goals.unshift(mk(S.draft.title,FR[S.draft.fi][0],S.draft.tasks,0,0)); S.goals[0].pick=Math.min(S.draft.start||0,S.draft.tasks.length-1); S.draft.start=0; S.ed=null; S.sw=null; S.adding=false; S.gi=0; S.minutes=PREF.min; S.setupFrom=null; go("setup","목표 만들기 → 실행 세팅"); }
   if(a==="start"){ S.gi=+d.g; S.minutes=PREF.min; S.routeSel=null; S.ed=null; S.sw=null; S.adding=false; S.dragI=null; go("route",""+S.goals[S.gi].title); }
-  if(a==="routeOk"){ saveEd(); S.adding=false; S.sw=null; const sel=(S.routeSel!=null&&g.tasks[S.routeSel]&&g.tasks[S.routeSel].st!=="done")?S.routeSel:g.tasks.indexOf(cur(g)); g.pick=sel; S.routeSel=null; go("setup","‘"+g.tasks[sel].n+"’부터 → 실행 세팅"); }
+  if(a==="routeOk"){ saveEd(); S.adding=false; S.sw=null; const sel=(S.routeSel!=null&&g.tasks[S.routeSel]&&g.tasks[S.routeSel].st!=="done")?S.routeSel:g.tasks.indexOf(cur(g)); g.pick=sel; S.routeSel=null; S.setupFrom="route"; go("setup","‘"+g.tasks[sel].n+"’부터 → 실행 세팅"); }
   if(a==="mUp"){ S.minutes=Math.min(655,(S.minutes||0)+5); render(); return; }
   if(a==="mDown"){ S.minutes=Math.max(0,(S.minutes||0)-5); render(); return; }
   if(a==="go"||a==="goFree"){ g.starts=(g.starts||0)+1; if(!S.wxLock) wxRoll(); if(a==="goFree") S.minutes=0; S.sec=0; frame=0; S.running=true; startTick(); go("run",a==="go"?S.minutes+"분 걷기":"시간 없이 출발"); }
@@ -1236,7 +1236,7 @@ ph.addEventListener("click",e=>{
   if(a==="bgm"){ SND.bgm=!SND.bgm; try{ localStorage.setItem("bgm",SND.bgm?"on":"off"); }catch(e){} if(SND.bgm&&!SND.on){ SND.on=true; } sndSync(); return; }
   if(a==="nextClose"){ go("dist","다음 단계 닫기"); return; }
   if(a==="nextChange"){ S.routeSel=null; go("route","다음 단계 바꾸기 → 단계 고르기"); return; }
-  if(a==="nextGo"){ const t=cur(g); g.pick=g.tasks.indexOf(t); go("setup","바로 시작 → 시간 정하기"); return; }
+  if(a==="nextGo"){ const t=cur(g); g.pick=g.tasks.indexOf(t); S.setupFrom=null; go("setup","바로 시작 → 시간 정하기"); return; }
   if(a==="bag"){ S.bagFromRun=true; S.bagGi=S.gi; go("bag","가방 (실행 중)"); }
   if(a==="bagClose"){ S.bagFromRun=false; go("run","가방 닫기 → 계속 걷기"); }
   if(a==="homeTab"||a==="bagTab") S.bagFromRun=false;
@@ -1266,8 +1266,8 @@ ph.addEventListener("click",e=>{
   if(a==="recTab_stamp"||a==="recTab_pc"||a==="recTab_coll"){ S.recTab=a.slice(7); S.ppX=0; render(); return; }
   if(a==="pcOpen"){ S.stampGi=+d.g; S.pcBig=true; S.pcOnly=true; go("stamp","엽서 크게 보기"); return; }
   if(a==="pcBigClose"){ S.pcBig=false; if(S.pcOnly){ S.pcOnly=false; go("rec","엽서 닫기"); return; } render(); return; }
-  if(a==="share"){ S.pcBig=false; go("share","공유 이미지"); }
-  if(a==="shareClose") go("stamp","공유 닫기");
+  if(a==="share"){ S.shareFrom=S.pcOnly?"rec":"stamp"; S.pcBig=false; S.pcOnly=false; go("share","공유 이미지"); }
+  if(a==="shareClose"){ const f=S.shareFrom||"stamp"; S.shareFrom=null; go(f,"공유 닫기"); }
   if(a==="shareSave"){ S.toast="이미지를 사진첩에 저장했어요"; render(); }
   if(a==="shareInsta"){ S.toast="인스타그램 스토리로 넘어가요 (데모)"; render(); }
   if(a==="pcSave"){ S.fromBag=false; S.stampGi=S.gi; S.ppGo=Math.floor(S.goals.filter(x=>x.arrived).indexOf(g)/6); S.pcBig=false; go("stamp","기록 보기 → 도장 상세"); }
