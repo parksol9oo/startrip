@@ -1,0 +1,20 @@
+{
+  "name": "startrip",
+  "version": "1.0.0",
+  "description": "Startrip 앱인토스(WebView) 빌드 설정",
+  "scripts": {
+    "build": "node scripts/prepare.mjs && ait build",
+    "deploy": "ait deploy",
+    "copy": "node scripts/prepare.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apps-in-toss/web-framework": "^3.10.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "@apps-in-toss/devtools": "^3.10.0"
+  }
+}
