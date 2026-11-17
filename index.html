@@ -1426,6 +1426,22 @@ tZ.onclick=()=>tab("zero"); tP.onclick=()=>tab("free"); tPr.onclick=()=>tab("pre
       S=st; if(walking) startTick(); return true; }catch(e){ return false; } }
   const __renderSave=render; let saveT=null, updPending=null, updLast=0;   /* upd*: 아래 자동 업데이트에서 사용 */
   render=function(){ __renderSave(); clearTimeout(saveT); saveT=setTimeout(snap,150); if(updPending) setTimeout(applyUpdate,0); };
+  /* 앱인토스 광고 · 상단 고정 배너. appsintoss/scripts/prepare.mjs 가 window.TossAds(SDK) 와 window.TOSS_AD_IDS 를 넣어요.
+     화면이 바뀔 때마다 DOM 을 통째로 다시 그리므로, 렌더가 끝날 때마다 빈 .adslot[data-ad=banner] 를 찾아 배너를 다시 붙이고
+     사라진 자리는 destroy 해요. 광고가 없거나(onNoFill) 실패하면 자리를 접어서 빈 띠가 남지 않게 해요. 토스 밖에서는 isSupported 가 false 라 아무것도 안 해요. */
+  (function(){ if(!window.APPS_IN_TOSS) return; const T=window.TossAds, ID=(window.TOSS_AD_IDS||{}).banner; if(!T||!ID) return;
+    let ready=false, cur=null, curEl=null, curView=null;
+    function clear(){ if(cur){ try{ cur.destroy(); }catch(e){} } cur=null; curEl=null; curView=null; }
+    function collapse(el){ if(el===curEl){ el.style.minHeight="0"; el.innerHTML=""; } }
+    function sync(){ if(!ready) return; const el=document.querySelector('.adslot[data-ad="banner"]'); if(el===curEl) return;
+      /* 같은 화면이 다시 그려진 것(토스트 · 버튼 상태 변경 등)이면 광고를 새로 요청하지 않고, 붙어 있던 배너 요소를 새 자리로 옮겨요. */
+      if(el&&curEl&&curView===S.view){ el.replaceWith(curEl); return; }
+      clear(); if(!el) return;
+      curEl=el; curView=S.view; el.style.minHeight="102px"; el.style.background="#fff";
+      cur=T.attachBanner(ID,el,{theme:"light",tone:"blackAndWhite",variant:"expanded",callbacks:{ onNoFill:()=>collapse(el), onAdFailedToRender:()=>collapse(el) }}); }
+    const __renderAd=render; render=function(){ __renderAd.apply(this,arguments); sync(); };
+    try{ if(T.initialize.isSupported()) T.initialize({callbacks:{ onInitialized:()=>{ ready=true; sync(); }, onInitializationFailed:()=>{} }}); }catch(e){}
+  })();
   setInterval(()=>{ if(S&&S.running) snap(); },5000);                                /* 걷는 동안 타이머는 화면을 다시 그리지 않아서 따로 저장 */
   window.addEventListener("pagehide",snap); document.addEventListener("visibilitychange",()=>{ if(document.hidden) snap(); });
   if(load()) render();
