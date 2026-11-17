@@ -23,6 +23,10 @@
 - 저장은 기기 · 브라우저별이에요. 홈 화면 앱은 Safari 탭과 저장 데이터를 따로 가지니, 테스터에게는 처음부터 홈 화면 앱으로 시작하라고 안내해 주세요. (Safari 탭은 7일간 안 쓰면 데이터가 지워질 수 있지만 홈 화면 앱은 해당되지 않아요.)
 - 폰 화면은 390×760 기준으로 그려지고 기기 화면에 맞춰 비율대로 축소·확대돼요. 쪼개기 AI는 `index.html`과 같은 Worker를 그대로 써요(아래 참고).
 
+## 앱인토스(토스 미니앱)로 내보내기 (appsintoss/)
+
+토스 안에서 여는 미니앱(`.ait`) 번들은 `appsintoss/` 폴더에서 만들어요. 앱 내용은 루트 `index.html`만 고치면 되고, 빌드 때 `appsintoss/scripts/prepare.mjs`가 복사하면서 앱 모드(처음 시작)로 열리게 바꿔요. main에 Push되면 GitHub Actions가 `startrip.ait`를 자동으로 만들어요. 자세한 절차와 주의점은 [appsintoss/README.md](appsintoss/README.md)를 보세요.
+
 ## 쪼개기 AI 연결하기 (proxy/)
 
 `index.html`만 열면 쪼개기는 **예시 단계**로 동작해요. 실제로 AI가 쪼개게 하려면 `proxy/` 폴더의 Cloudflare Worker를 한 번 배포하고, 그 주소를 `index.html`에 적어 주면 돼요. API 키는 Worker 안에만 있고 정적 페이지에는 들어가지 않아요.
