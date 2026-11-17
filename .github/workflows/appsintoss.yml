@@ -27,6 +27,9 @@ jobs:
           cache-dependency-path: appsintoss/package-lock.json
       - run: npm ci
       - run: npm run build
+        env:
+          # 비어 있으면 테스트 광고 ID 로 빌드돼요. 출시용은 저장소 Settings › Variables 에 TOSS_BANNER_AD_ID 를 넣어요.
+          TOSS_BANNER_AD_ID: ${{ vars.TOSS_BANNER_AD_ID }}
       - uses: actions/upload-artifact@v4
         with:
           name: startrip-ait
